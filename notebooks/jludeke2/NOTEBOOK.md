@@ -1,4 +1,22 @@
 # John Ludeke's Lab Notebook for ECE 445
+## Tuesday, February 24
+### Overview
+Continued working on the design document, with slight pivots to the project on a broader view.
+
+### Thinking about small pivots.
+We are thinking of using just a single signal (rather than four) for a couple of reasons. The students leading our project provided us with a paper that talks about detecting slow-wave sleep with just one electrode. We would like to follow this, which reduces complexity. This still requires 3 electrodes, but means that our microcontroller just has to juggle one "combined" signal.
+
+### What was changed?
+I added /changed a couple things:
+- Clarified the mobile applications goals (purely visualization of slow-wave sleep).
+- Clarified the microcontroller UART communication with the BLE.
+- Clarified the BLE communication with the mobile app.
+
+We also did some talking about how to do initial testing. We decided that capturing the signals and confirming we have them before moving to the PIC32 signal processor would be smart, then we can worry about the other subsystems.
+
+### What's next?
+- Decide on a direction so that we can start KiCad
+  - Main concern here is compatibility!
 
 ## Monday, February 23
 ### Overview
@@ -49,5 +67,6 @@ Finished up our project proposal.
 ### What's next?
 - Put parts into a ready-to-order spreadsheet.
 - Create design document.
+
 
 

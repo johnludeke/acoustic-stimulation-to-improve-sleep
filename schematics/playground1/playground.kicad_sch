@@ -7064,6 +7064,48 @@
 			)
 		)
 	)
+	(sheet
+		(at 0.254 225.806)
+		(size 35.306 31.496)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "6c9dea1e-c151-4e07-9538-ad97d255bf92")
+		(property "Sheetname" "pic32"
+			(at 0.254 225.0944 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "pic32.kicad_sch"
+			(at 0.254 257.8866 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "playground"
+				(path "/238de170-6a90-40ad-afaf-ab931b754487"
+					(page "2")
+				)
+			)
+		)
+	)
 	(sheet_instances
 		(path "/"
 			(page "1")

@@ -1,4 +1,19 @@
 # John Ludeke's Lab Notebook for ECE 445
+## Monday, March 2
+### Quick update
+Continued work on power schematic, adjusted a few things. Needed to add capacitors in parallel to add more denoising. Also started work on inputs to our microcontroller, the PIC32.
+
+## Thursday, Feburary 26
+### Overview
+Began work on schematic for power system and connecting to the ADS1299.
+
+### What was done
+Working through the power system cleared up a lot of things about power through our whole system. We have continued with using 4 AA batteries to meet all power requirements of our parts. This involves a 3.3V digital rail, and a 0-5V analog rail (this is purely used for the ADS1299 chip). 
+
+I also included as much denoising to the power systems as possible to reduce the possible interruptions to the EEG signals. I've included a picture of the diagram.
+<img width="1021" height="701" alt="image" src="https://github.com/user-attachments/assets/8d2160c3-b937-4aef-96b5-feceaf132840" />
+
+
 ## Tuesday, February 24
 ### Overview
 Continued working on the design document, with slight pivots to the project on a broader view.
@@ -67,6 +82,7 @@ Finished up our project proposal.
 ### What's next?
 - Put parts into a ready-to-order spreadsheet.
 - Create design document.
+
 
 
 

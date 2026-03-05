@@ -2517,7 +2517,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Regulator_Linear:AP2112K-3.3"
+		(symbol "Regulator_Linear:LM2931AZ-5.0_TO92"
 			(pin_names
 				(offset 0.254)
 			)
@@ -2525,7 +2525,15 @@
 			(in_bom yes)
 			(on_board yes)
 			(property "Reference" "U"
-				(at -5.08 5.715 0)
+				(at -3.81 3.175 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "LM2931AZ-5.0_TO92"
+				(at 0 3.175 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -2533,17 +2541,18 @@
 					(justify left)
 				)
 			)
-			(property "Value" "AP2112K-3.3"
+			(property "Footprint" "Package_TO_SOT_THT:TO-92_Inline"
 				(at 0 5.715 0)
 				(effects
 					(font
 						(size 1.27 1.27)
+						(italic yes)
 					)
-					(justify left)
+					(hide yes)
 				)
 			)
-			(property "Footprint" "Package_TO_SOT_SMD:SOT-23-5"
-				(at 0 8.255 0)
+			(property "Datasheet" "http://www.ti.com/lit/ds/symlink/lm2931-n.pdf"
+				(at 0 -1.27 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -2551,16 +2560,7 @@
 					(hide yes)
 				)
 			)
-			(property "Datasheet" "https://www.diodes.com/assets/Datasheets/AP2112.pdf"
-				(at 0 2.54 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "600mA low dropout linear regulator, with enable pin, 3.8V-6V input voltage range, 3.3V fixed positive output, SOT-23-5"
+			(property "Description" "100mA Low drop-out regulator, Fixed Output 5V, TO-92"
 				(at 0 0 0)
 				(effects
 					(font
@@ -2569,7 +2569,7 @@
 					(hide yes)
 				)
 			)
-			(property "ki_keywords" "linear regulator ldo fixed positive"
+			(property "ki_keywords" "REGULATOR LDO 5V"
 				(at 0 0 0)
 				(effects
 					(font
@@ -2578,7 +2578,7 @@
 					(hide yes)
 				)
 			)
-			(property "ki_fp_filters" "SOT?23?5*"
+			(property "ki_fp_filters" "TO?92*"
 				(at 0 0 0)
 				(effects
 					(font
@@ -2587,10 +2587,10 @@
 					(hide yes)
 				)
 			)
-			(symbol "AP2112K-3.3_0_1"
+			(symbol "LM2931AZ-5.0_TO92_0_1"
 				(rectangle
-					(start -5.08 4.445)
-					(end 5.08 -5.08)
+					(start -5.08 -5.08)
+					(end 5.08 1.905)
 					(stroke
 						(width 0.254)
 						(type default)
@@ -2600,29 +2600,11 @@
 					)
 				)
 			)
-			(symbol "AP2112K-3.3_1_1"
+			(symbol "LM2931AZ-5.0_TO92_1_1"
 				(pin power_in line
-					(at -7.62 2.54 0)
-					(length 2.54)
-					(name "VIN"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
 					(at -7.62 0 0)
 					(length 2.54)
-					(name "EN"
+					(name "VI"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2655,36 +2637,17 @@
 						)
 					)
 				)
-				(pin no_connect line
-					(at 5.08 0 180)
-					(length 2.54)
-					(hide yes)
-					(name "NC"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
 				(pin power_out line
-					(at 7.62 2.54 180)
+					(at 7.62 0 180)
 					(length 2.54)
-					(name "VOUT"
+					(name "VO"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "5"
+					(number "1"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2695,7 +2658,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Regulator_Linear:TLV75533PDBV"
+		(symbol "Regulator_Linear:MCP1700x-330xxTT"
 			(pin_names
 				(offset 0.254)
 			)
@@ -2703,15 +2666,15 @@
 			(in_bom yes)
 			(on_board yes)
 			(property "Reference" "U"
-				(at -3.81 5.715 0)
+				(at -3.81 3.175 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
 				)
 			)
-			(property "Value" "TLV75533PDBV"
-				(at 0 5.715 0)
+			(property "Value" "MCP1700x-330xxTT"
+				(at 0 3.175 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -2719,18 +2682,8 @@
 					(justify left)
 				)
 			)
-			(property "Footprint" "Package_TO_SOT_SMD:SOT-23-5"
-				(at 0 8.255 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-						(italic yes)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "http://www.ti.com/lit/ds/symlink/tlv755p.pdf"
-				(at 0 1.27 0)
+			(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
+				(at 0 5.715 0)
 				(effects
 					(font
 						(size 1.27 1.27)
@@ -2738,7 +2691,7 @@
 					(hide yes)
 				)
 			)
-			(property "Description" "500mA Low Dropout Voltage Regulator, Fixed Output 3.3V, SOT-23-5"
+			(property "Datasheet" "http://ww1.microchip.com/downloads/en/DeviceDoc/20001826D.pdf"
 				(at 0 0 0)
 				(effects
 					(font
@@ -2747,7 +2700,16 @@
 					(hide yes)
 				)
 			)
-			(property "ki_keywords" "LDO Regulator Fixed Positive"
+			(property "Description" "250mA Low Quiscent Current LDO, 3.3V output, SOT-23"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "regulator linear ldo"
 				(at 0 0 0)
 				(effects
 					(font
@@ -2765,9 +2727,9 @@
 					(hide yes)
 				)
 			)
-			(symbol "TLV75533PDBV_0_1"
+			(symbol "MCP1700x-330xxTT_0_1"
 				(rectangle
-					(start -5.08 4.445)
+					(start -5.08 1.905)
 					(end 5.08 -5.08)
 					(stroke
 						(width 0.254)
@@ -2778,29 +2740,11 @@
 					)
 				)
 			)
-			(symbol "TLV75533PDBV_1_1"
+			(symbol "MCP1700x-330xxTT_1_1"
 				(pin power_in line
-					(at -7.62 2.54 0)
-					(length 2.54)
-					(name "IN"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin input line
 					(at -7.62 0 0)
 					(length 2.54)
-					(name "EN"
+					(name "VI"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2825,26 +2769,7 @@
 							)
 						)
 					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin no_connect line
-					(at 5.08 0 180)
-					(length 2.54)
-					(hide yes)
-					(name "NC"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
+					(number "1"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2853,16 +2778,16 @@
 					)
 				)
 				(pin power_out line
-					(at 7.62 2.54 180)
+					(at 7.62 0 180)
 					(length 2.54)
-					(name "OUT"
+					(name "VO"
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number "5"
+					(number "2"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -4266,6 +4191,12 @@
 		(uuid "025eac97-6d42-4579-b9f3-6dd8df503a6c")
 	)
 	(junction
+		(at 109.22 88.9)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "05029e68-19b1-4bc6-b2b2-f662f494f200")
+	)
+	(junction
 		(at 97.79 109.22)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4330,12 +4261,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "419d17cd-b909-4371-bed6-aebf0c060e44")
-	)
-	(junction
-		(at 109.22 88.9)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "46e74119-2b17-4372-87f2-7fe2441f6f9c")
 	)
 	(junction
 		(at 64.77 132.08)
@@ -4404,18 +4329,6 @@
 		(uuid "677de702-e969-4abb-bb74-19e4d6a15928")
 	)
 	(junction
-		(at 64.77 128.27)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "68e6a0ea-7ef1-4da5-b3d5-2f5f151f9cd6")
-	)
-	(junction
-		(at 109.22 125.73)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "6cb6b58c-5de8-459a-8867-020f2aa46f4b")
-	)
-	(junction
 		(at 80.01 191.77)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4432,12 +4345,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "892cba8e-48ab-4974-899c-3ad73d29f89c")
-	)
-	(junction
-		(at 64.77 91.44)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "8e37659a-f6d3-4b83-b9fb-9ca6becb967b")
 	)
 	(junction
 		(at 97.79 146.05)
@@ -4492,6 +4399,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "b14fd783-ec80-4673-a304-cdab8ba74788")
+	)
+	(junction
+		(at 109.22 125.73)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "b28fdfdb-556e-4f32-a2c3-0f68561796ea")
 	)
 	(junction
 		(at 85.09 163.83)
@@ -5059,6 +4972,16 @@
 	)
 	(wire
 		(pts
+			(xy 105.41 88.9) (xy 109.22 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3bd4c173-7c98-458c-bcac-8f469d6af891")
+	)
+	(wire
+		(pts
 			(xy 78.74 106.68) (xy 78.74 109.22)
 		)
 		(stroke
@@ -5176,16 +5099,6 @@
 			(type default)
 		)
 		(uuid "439f7069-d6bf-490f-95d1-66e6e3834840")
-	)
-	(wire
-		(pts
-			(xy 64.77 128.27) (xy 64.77 125.73)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4425a1bd-b3aa-487e-8885-a15dfbb756ed")
 	)
 	(wire
 		(pts
@@ -5309,7 +5222,7 @@
 	)
 	(wire
 		(pts
-			(xy 64.77 91.44) (xy 64.77 88.9)
+			(xy 64.77 88.9) (xy 64.77 95.25)
 		)
 		(stroke
 			(width 0)
@@ -5559,16 +5472,6 @@
 	)
 	(wire
 		(pts
-			(xy 64.77 91.44) (xy 64.77 95.25)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "73fbaa48-7dc5-4184-87af-8014962ff79c")
-	)
-	(wire
-		(pts
 			(xy 179.07 114.3) (xy 186.69 114.3)
 		)
 		(stroke
@@ -5586,16 +5489,6 @@
 			(type default)
 		)
 		(uuid "75a2762f-23ef-460e-b621-05673b970367")
-	)
-	(wire
-		(pts
-			(xy 90.17 128.27) (xy 64.77 128.27)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "75f5fa33-28e3-4b52-b297-a3081d8ec30c")
 	)
 	(wire
 		(pts
@@ -5739,6 +5632,16 @@
 	)
 	(wire
 		(pts
+			(xy 105.41 125.73) (xy 109.22 125.73)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "89e840f3-b6e2-447c-938f-79cd5d45c796")
+	)
+	(wire
+		(pts
 			(xy 109.22 125.73) (xy 109.22 135.89)
 		)
 		(stroke
@@ -5839,7 +5742,7 @@
 	)
 	(wire
 		(pts
-			(xy 97.79 146.05) (xy 97.79 135.89)
+			(xy 97.79 133.35) (xy 97.79 146.05)
 		)
 		(stroke
 			(width 0)
@@ -5856,16 +5759,6 @@
 			(type default)
 		)
 		(uuid "9ab34beb-253c-4b0c-964c-2b8aad4b6989")
-	)
-	(wire
-		(pts
-			(xy 105.41 88.9) (xy 109.22 88.9)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9ae4c04f-fbd1-4db3-b986-c0aef591775f")
 	)
 	(wire
 		(pts
@@ -6016,16 +5909,6 @@
 			(type default)
 		)
 		(uuid "ac1c652b-671f-43f3-8677-39c10980f856")
-	)
-	(wire
-		(pts
-			(xy 109.22 125.73) (xy 105.41 125.73)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ad08e81b-49ca-4800-8103-d9aa35b8dc3f")
 	)
 	(wire
 		(pts
@@ -6419,6 +6302,16 @@
 	)
 	(wire
 		(pts
+			(xy 97.79 96.52) (xy 97.79 109.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "da4993b7-be51-41b1-95d5-1ab4bc9a24ff")
+	)
+	(wire
+		(pts
 			(xy 153.67 114.3) (xy 161.29 114.3)
 		)
 		(stroke
@@ -6449,7 +6342,7 @@
 	)
 	(wire
 		(pts
-			(xy 64.77 128.27) (xy 64.77 132.08)
+			(xy 64.77 125.73) (xy 64.77 132.08)
 		)
 		(stroke
 			(width 0)
@@ -6576,26 +6469,6 @@
 			(type default)
 		)
 		(uuid "f3714281-c217-41a2-837b-8116968d3564")
-	)
-	(wire
-		(pts
-			(xy 90.17 91.44) (xy 64.77 91.44)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f6b54779-4fb9-430d-83f4-2b2ed9f60e78")
-	)
-	(wire
-		(pts
-			(xy 97.79 109.22) (xy 97.79 99.06)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f7b98437-a17a-43d9-a055-4e6bdade0097")
 	)
 	(wire
 		(pts
@@ -7912,6 +7785,78 @@
 			(project "playground"
 				(path "/238de170-6a90-40ad-afaf-ab931b754487"
 					(reference "C18")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Regulator_Linear:LM2931AZ-5.0_TO92")
+		(at 97.79 88.9 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "2e8523bb-9e00-4873-ba28-62ecd9d43df9")
+		(property "Reference" "U5"
+			(at 97.79 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "LM2931AZ-5.0_TO92"
+			(at 97.79 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_THT:TO-92_Inline"
+			(at 97.79 83.185 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "http://www.ti.com/lit/ds/symlink/lm2931-n.pdf"
+			(at 97.79 90.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "100mA Low drop-out regulator, Fixed Output 5V, TO-92"
+			(at 97.79 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "603fe2fc-828d-4d17-bf92-5359061aeaf0")
+		)
+		(pin "2"
+			(uuid "3822e3a2-3d82-4749-8e3b-3f6ebfb3abd7")
+		)
+		(pin "3"
+			(uuid "8495ad15-a9cc-4b19-8941-500083fe0e11")
+		)
+		(instances
+			(project ""
+				(path "/238de170-6a90-40ad-afaf-ab931b754487"
+					(reference "U5")
 					(unit 1)
 				)
 			)
@@ -9237,83 +9182,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Regulator_Linear:AP2112K-3.3")
-		(at 97.79 91.44 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "70065f49-1d42-4748-b443-d67c17b48318")
-		(property "Reference" "U3"
-			(at 97.79 82.55 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "AP2112K-5.0"
-			(at 97.79 85.09 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-5"
-			(at 97.79 83.185 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://www.diodes.com/assets/Datasheets/AP2112.pdf"
-			(at 97.79 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Final regulator MPN to be confirmed based on availability; 5.0 V, >=300 mA LDO required."
-			(at 97.79 91.44 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "662ab730-7bda-4932-b5c2-dc7734cee312")
-		)
-		(pin "4"
-			(uuid "37f292c5-85ce-4ad8-bf84-ba2fe93fa8dc")
-		)
-		(pin "5"
-			(uuid "f3e27384-9327-4c15-8a1a-4c4e5777f1d9")
-		)
-		(pin "3"
-			(uuid "d72f6650-ee29-43b6-b527-196ae0ff34f0")
-		)
-		(pin "2"
-			(uuid "d0af5f5c-2cb8-485a-ba76-66f6ffb5eae2")
-		)
-		(instances
-			(project ""
-				(path "/238de170-6a90-40ad-afaf-ab931b754487"
-					(reference "U3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:Battery_Cell")
 		(at 72.39 35.56 0)
 		(unit 1)
@@ -10356,84 +10224,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Regulator_Linear:TLV75533PDBV")
-		(at 97.79 128.27 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "bd59f23c-123c-4bfe-b752-10d936b73661")
-		(property "Reference" "U2"
-			(at 97.79 119.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "TLV75533PDBV"
-			(at 97.79 121.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-5"
-			(at 97.79 120.015 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-					(italic yes)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "http://www.ti.com/lit/ds/symlink/tlv755p.pdf"
-			(at 97.79 127 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "500mA Low Dropout Voltage Regulator, Fixed Output 3.3V, SOT-23-5"
-			(at 97.79 128.27 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "3"
-			(uuid "34b69d55-52fb-4681-b93a-47fbbca706f8")
-		)
-		(pin "1"
-			(uuid "b6488bf8-dedd-48a9-ba94-ee6cba2b2bc6")
-		)
-		(pin "2"
-			(uuid "fa4fd997-964a-4b28-adb5-545547074ad5")
-		)
-		(pin "4"
-			(uuid "0f19869c-37ff-4d3a-890a-1eec7ad30f54")
-		)
-		(pin "5"
-			(uuid "a0935cf5-bc25-4fcf-b15a-95d16c076831")
-		)
-		(instances
-			(project ""
-				(path "/238de170-6a90-40ad-afaf-ab931b754487"
-					(reference "U2")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Analog_ADC:ADS1299")
 		(at 215.9 83.82 0)
 		(unit 1)
@@ -10685,6 +10475,77 @@
 			(project ""
 				(path "/238de170-6a90-40ad-afaf-ab931b754487"
 					(reference "U1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Regulator_Linear:MCP1700x-330xxTT")
+		(at 97.79 125.73 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "c48693d9-7398-4645-839a-4be5070f774b")
+		(property "Reference" "U2"
+			(at 97.79 119.38 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "MCP1700x-330xxTT"
+			(at 97.79 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
+			(at 97.79 120.015 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "http://ww1.microchip.com/downloads/en/DeviceDoc/20001826D.pdf"
+			(at 97.79 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "250mA Low Quiscent Current LDO, 3.3V output, SOT-23"
+			(at 97.79 125.73 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "11a01970-7df0-4373-8e4b-fef09fc7ffc4")
+		)
+		(pin "1"
+			(uuid "064e08c1-29dd-4f1e-beb1-0e9cde8db7f0")
+		)
+		(pin "3"
+			(uuid "f323f6db-74c2-49c9-84ae-6cdc24e11555")
+		)
+		(instances
+			(project ""
+				(path "/238de170-6a90-40ad-afaf-ab931b754487"
+					(reference "U2")
 					(unit 1)
 				)
 			)

@@ -2352,7 +2352,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "01aa9e3e-7e8d-4ca8-99be-bab0f551deeb")
-		(property "Reference" "C3"
+		(property "Reference" "C?"
 			(at 227.33 82.55 90)
 			(effects
 				(font
@@ -2402,6 +2402,12 @@
 			(uuid "640d283c-7db8-4935-a1d9-d80b0e4a3675")
 		)
 		(instances
+			(project "playground"
+				(path "/238de170-6a90-40ad-afaf-ab931b754487/6c9dea1e-c151-4e07-9538-ad97d255bf92"
+					(reference "C?")
+					(unit 1)
+				)
+			)
 			(project ""
 				(path "/7c95cdee-8526-4ace-82fb-b64957eb01de"
 					(reference "C3")
@@ -2420,7 +2426,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "167b1819-cde5-477e-84ff-8bca341d0133")
-		(property "Reference" "D1"
+		(property "Reference" "D?"
 			(at 49.2125 71.12 0)
 			(effects
 				(font
@@ -2503,7 +2509,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2527276a-fd05-4472-a388-0b08cf89012a")
-		(property "Reference" "U?"
+		(property "Reference" "U4"
 			(at 133.35 59.69 0)
 			(effects
 				(font
@@ -2736,7 +2742,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "3ff5c32d-3538-40fa-9f41-d381bb5dd2a1")
-		(property "Reference" "SW2"
+		(property "Reference" "SW?"
 			(at 27.94 59.69 0)
 			(effects
 				(font
@@ -2786,6 +2792,12 @@
 			(uuid "67c17fb8-08dd-4491-bbd6-096ef56d8b39")
 		)
 		(instances
+			(project "playground"
+				(path "/238de170-6a90-40ad-afaf-ab931b754487/6c9dea1e-c151-4e07-9538-ad97d255bf92"
+					(reference "SW?")
+					(unit 1)
+				)
+			)
 			(project ""
 				(path "/7c95cdee-8526-4ace-82fb-b64957eb01de"
 					(reference "SW2")
@@ -2804,7 +2816,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "8e5a0bcb-e8ab-4613-bdd7-a4b933658c91")
-		(property "Reference" "SW1"
+		(property "Reference" "SW?"
 			(at 35.56 99.06 0)
 			(effects
 				(font
@@ -2854,6 +2866,12 @@
 			(uuid "723fdae8-c3ae-4956-9078-0707963f9094")
 		)
 		(instances
+			(project "playground"
+				(path "/238de170-6a90-40ad-afaf-ab931b754487/6c9dea1e-c151-4e07-9538-ad97d255bf92"
+					(reference "SW?")
+					(unit 1)
+				)
+			)
 			(project ""
 				(path "/7c95cdee-8526-4ace-82fb-b64957eb01de"
 					(reference "SW1")
@@ -2872,7 +2890,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "95475328-4e27-438c-834e-99e179ec6660")
-		(property "Reference" "C2"
+		(property "Reference" "C?"
 			(at 26.67 90.17 90)
 			(effects
 				(font
@@ -2922,6 +2940,12 @@
 			(uuid "a4d2e3e0-0878-4395-9dd5-186d39fb8d44")
 		)
 		(instances
+			(project "playground"
+				(path "/238de170-6a90-40ad-afaf-ab931b754487/6c9dea1e-c151-4e07-9538-ad97d255bf92"
+					(reference "C?")
+					(unit 1)
+				)
+			)
 			(project ""
 				(path "/7c95cdee-8526-4ace-82fb-b64957eb01de"
 					(reference "C2")
@@ -2940,7 +2964,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "9e559b55-2e67-4ab5-a0bd-bf8b319e8b63")
-		(property "Reference" "C1"
+		(property "Reference" "C?"
 			(at 26.67 76.2 90)
 			(effects
 				(font
@@ -2990,6 +3014,12 @@
 			(uuid "e04b677e-3148-4cf3-8a46-350f3e521df0")
 		)
 		(instances
+			(project "playground"
+				(path "/238de170-6a90-40ad-afaf-ab931b754487/6c9dea1e-c151-4e07-9538-ad97d255bf92"
+					(reference "C?")
+					(unit 1)
+				)
+			)
 			(project ""
 				(path "/7c95cdee-8526-4ace-82fb-b64957eb01de"
 					(reference "C1")
@@ -3008,7 +3038,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a1fa45a8-f410-4ffe-8209-de44fb2917c1")
-		(property "Reference" "Y1"
+		(property "Reference" "Y?"
 			(at 44.45 90.1699 90)
 			(effects
 				(font
@@ -3060,6 +3090,12 @@
 			(uuid "96e4bd20-a086-4d8e-9700-b74dbefa99c6")
 		)
 		(instances
+			(project "playground"
+				(path "/238de170-6a90-40ad-afaf-ab931b754487/6c9dea1e-c151-4e07-9538-ad97d255bf92"
+					(reference "Y?")
+					(unit 1)
+				)
+			)
 			(project ""
 				(path "/7c95cdee-8526-4ace-82fb-b64957eb01de"
 					(reference "Y1")
@@ -3078,7 +3114,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d638a34f-6027-4774-afb9-29c7afbb77a0")
-		(property "Reference" "R2"
+		(property "Reference" "R?"
 			(at 43.18 71.12 90)
 			(effects
 				(font
@@ -3152,7 +3188,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "d855d1da-2897-4911-ac07-0f2f4c60304f")
-		(property "Reference" "R1"
+		(property "Reference" "R?"
 			(at 54.61 57.15 90)
 			(effects
 				(font
@@ -3226,7 +3262,7 @@
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f0709121-4b39-4caf-b23b-134babeaf089")
-		(property "Reference" "R3"
+		(property "Reference" "R?"
 			(at 44.45 109.2199 0)
 			(effects
 				(font
@@ -3278,6 +3314,12 @@
 			(uuid "01a35eac-6bcf-4a76-842e-013fd263c691")
 		)
 		(instances
+			(project "playground"
+				(path "/238de170-6a90-40ad-afaf-ab931b754487/6c9dea1e-c151-4e07-9538-ad97d255bf92"
+					(reference "R?")
+					(unit 1)
+				)
+			)
 			(project ""
 				(path "/7c95cdee-8526-4ace-82fb-b64957eb01de"
 					(reference "R3")

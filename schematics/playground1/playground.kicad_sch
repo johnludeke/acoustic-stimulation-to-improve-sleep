@@ -4152,6 +4152,18 @@
 		(uuid 73047e2f-b5d3-4418-996f-c0a0c6c7b5a3)
 	)
 	(rectangle
+		(start 13.97 152.4)
+		(end 119.38 196.85)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid 920d000f-884c-4bac-b57d-6663d412e917)
+	)
+	(rectangle
 		(start 67.31 15.24)
 		(end 139.7 73.66)
 		(stroke
@@ -4175,6 +4187,28 @@
 		)
 		(uuid d71b0fac-7f0c-43d1-90ea-cd1ebbfa7a28)
 	)
+	(rectangle
+		(start 12.7 91.44)
+		(end 55.88 137.16)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid fe347d8c-8bcc-4c68-bada-937b209c44c9)
+	)
+	(text "Channel Input Protection"
+		(exclude_from_sim no)
+		(at 30.48 156.718 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "2b2323f7-5e00-4cda-8fa0-41c69bc95e0d")
+	)
 	(text "POWER ENTRY"
 		(exclude_from_sim no)
 		(at 75.438 18.288 0)
@@ -4184,6 +4218,16 @@
 			)
 		)
 		(uuid "4f2cdd2a-63ed-481a-aa10-5ab2dcf792b1")
+	)
+	(text "Bias / power protection"
+		(exclude_from_sim no)
+		(at 25.908 96.774 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "b3205b3c-5f8f-43f3-9923-d7070126bc0a")
 	)
 	(text "GROUNDING"
 		(exclude_from_sim no)
@@ -4250,6 +4294,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "1f5be066-658c-46c8-be33-ddedd4ba2d0d")
+	)
+	(junction
+		(at 21.59 170.18)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "230bd85b-69e8-4e40-8c61-10a3e9a45a5c")
 	)
 	(junction
 		(at 52.07 36.83)
@@ -4366,12 +4416,6 @@
 		(uuid "6cb6b58c-5de8-459a-8867-020f2aa46f4b")
 	)
 	(junction
-		(at 21.59 162.56)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "794aab44-4066-412e-89f9-dc59f6253452")
-	)
-	(junction
 		(at 80.01 191.77)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4408,12 +4452,6 @@
 		(uuid "999601f6-ef28-430e-b38a-c7643cab6140")
 	)
 	(junction
-		(at 20.32 167.64)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "a75f0d6b-ef96-47f8-bb1d-54c1a1173be0")
-	)
-	(junction
 		(at 213.36 149.86)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4430,6 +4468,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "abba173c-39c8-40be-bf15-592b9c71ddea")
+	)
+	(junction
+		(at 20.32 175.26)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "abd28b65-f0bf-4563-8e8d-ab26c4dbeace")
 	)
 	(junction
 		(at 156.21 137.16)
@@ -4605,6 +4649,16 @@
 	)
 	(wire
 		(pts
+			(xy 21.59 161.29) (xy 21.59 170.18)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "07dd1920-21d9-4e0b-90f1-9a83b9ff4460")
+	)
+	(wire
+		(pts
 			(xy 234.95 106.68) (xy 238.76 106.68)
 		)
 		(stroke
@@ -4632,6 +4686,16 @@
 			(type default)
 		)
 		(uuid "0fd50de3-e5c4-4222-9a20-8d4beaf828f2")
+	)
+	(wire
+		(pts
+			(xy 17.78 180.34) (xy 24.13 180.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0fe95aac-4edb-4546-93df-87c1b62a453d")
 	)
 	(wire
 		(pts
@@ -4835,7 +4899,7 @@
 	)
 	(wire
 		(pts
-			(xy 49.53 177.8) (xy 60.96 177.8)
+			(xy 49.53 185.42) (xy 60.96 185.42)
 		)
 		(stroke
 			(width 0)
@@ -4875,13 +4939,13 @@
 	)
 	(wire
 		(pts
-			(xy 16.51 172.72) (xy 24.13 172.72)
+			(xy 16.51 185.42) (xy 24.13 185.42)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "2851101f-2990-43ca-a4f1-21edc246b307")
+		(uuid "27ce0bba-52f2-41b9-b12d-5d621b7ab2d5")
 	)
 	(wire
 		(pts
@@ -5145,7 +5209,7 @@
 	)
 	(wire
 		(pts
-			(xy 20.32 167.64) (xy 24.13 167.64)
+			(xy 20.32 175.26) (xy 24.13 175.26)
 		)
 		(stroke
 			(width 0)
@@ -5315,7 +5379,7 @@
 	)
 	(wire
 		(pts
-			(xy 20.32 148.59) (xy 52.07 148.59)
+			(xy 20.32 158.75) (xy 52.07 158.75)
 		)
 		(stroke
 			(width 0)
@@ -5325,7 +5389,7 @@
 	)
 	(wire
 		(pts
-			(xy 21.59 151.13) (xy 50.8 151.13)
+			(xy 21.59 161.29) (xy 50.8 161.29)
 		)
 		(stroke
 			(width 0)
@@ -5405,7 +5469,7 @@
 	)
 	(wire
 		(pts
-			(xy 52.07 148.59) (xy 52.07 166.37)
+			(xy 52.07 158.75) (xy 52.07 166.37)
 		)
 		(stroke
 			(width 0)
@@ -5485,7 +5549,7 @@
 	)
 	(wire
 		(pts
-			(xy 20.32 167.64) (xy 20.32 148.59)
+			(xy 20.32 158.75) (xy 20.32 175.26)
 		)
 		(stroke
 			(width 0)
@@ -5685,16 +5749,6 @@
 	)
 	(wire
 		(pts
-			(xy 16.51 177.8) (xy 24.13 177.8)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8b802867-19fb-47d5-bb26-21da4387afd0")
-	)
-	(wire
-		(pts
 			(xy 100.33 50.8) (xy 100.33 53.34)
 		)
 		(stroke
@@ -5835,7 +5889,7 @@
 	)
 	(wire
 		(pts
-			(xy 16.51 167.64) (xy 20.32 167.64)
+			(xy 16.51 175.26) (xy 20.32 175.26)
 		)
 		(stroke
 			(width 0)
@@ -5872,16 +5926,6 @@
 			(type default)
 		)
 		(uuid "9d9b1a11-d6e4-4e13-be4d-0cae4bc0d8a9")
-	)
-	(wire
-		(pts
-			(xy 21.59 162.56) (xy 21.59 151.13)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9deee2bd-4736-49d8-a164-d4435c2b17f0")
 	)
 	(wire
 		(pts
@@ -6175,7 +6219,7 @@
 	)
 	(wire
 		(pts
-			(xy 17.78 162.56) (xy 21.59 162.56)
+			(xy 17.78 170.18) (xy 21.59 170.18)
 		)
 		(stroke
 			(width 0)
@@ -6385,7 +6429,7 @@
 	)
 	(wire
 		(pts
-			(xy 50.8 151.13) (xy 50.8 163.83)
+			(xy 50.8 161.29) (xy 50.8 163.83)
 		)
 		(stroke
 			(width 0)
@@ -6475,7 +6519,7 @@
 	)
 	(wire
 		(pts
-			(xy 21.59 162.56) (xy 24.13 162.56)
+			(xy 21.59 170.18) (xy 24.13 170.18)
 		)
 		(stroke
 			(width 0)
@@ -6555,7 +6599,7 @@
 	)
 	(wire
 		(pts
-			(xy 60.96 177.8) (xy 60.96 191.77)
+			(xy 60.96 185.42) (xy 60.96 191.77)
 		)
 		(stroke
 			(width 0)
@@ -6624,7 +6668,7 @@
 		(uuid "0d861a18-0c1f-47c5-8c70-921613c6638f")
 	)
 	(label "SRB2"
-		(at 16.51 167.64 0)
+		(at 16.51 175.26 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -6694,7 +6738,7 @@
 		(uuid "52440c5a-a321-4eec-ac28-7b8fe05a8aae")
 	)
 	(label "SRB2"
-		(at 16.51 177.8 0)
+		(at 16.51 185.42 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -6744,7 +6788,7 @@
 		(uuid "6aa870d9-596a-441f-93c2-dd8378d5aac6")
 	)
 	(label "1P"
-		(at 17.78 162.56 0)
+		(at 17.78 170.18 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -6944,7 +6988,7 @@
 		(uuid "bb0873b8-9b92-4c72-a36d-c657705f4e14")
 	)
 	(label "AVSS"
-		(at 16.51 172.72 0)
+		(at 17.78 180.34 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -8387,7 +8431,7 @@
 	)
 	(symbol
 		(lib_id "TPD4E1B06DCKR:TPD4E1B06DCKR")
-		(at 36.83 172.72 0)
+		(at 36.83 180.34 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8396,7 +8440,7 @@
 		(fields_autoplaced yes)
 		(uuid "494b02db-70cd-4e0e-9505-8f407cc41a60")
 		(property "Reference" "D2"
-			(at 36.83 154.94 0)
+			(at 36.83 162.56 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8404,7 +8448,7 @@
 			)
 		)
 		(property "Value" "TPD4E1B06DCKR"
-			(at 36.83 157.48 0)
+			(at 36.83 165.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8412,7 +8456,7 @@
 			)
 		)
 		(property "Footprint" "TPD4E1B06DCKR:TVS_TPD4E1B06DCKR"
-			(at 36.83 172.72 0)
+			(at 36.83 180.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8422,7 +8466,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 36.83 172.72 0)
+			(at 36.83 180.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8431,7 +8475,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 36.83 172.72 0)
+			(at 36.83 180.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8440,7 +8484,7 @@
 			)
 		)
 		(property "MF" "Texas Instruments"
-			(at 36.83 172.72 0)
+			(at 36.83 180.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8450,7 +8494,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" "1.1 mm"
-			(at 36.83 172.72 0)
+			(at 36.83 180.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8460,7 +8504,7 @@
 			)
 		)
 		(property "Package" "SOT-SC70-6 Texas Instruments"
-			(at 36.83 172.72 0)
+			(at 36.83 180.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8470,7 +8514,7 @@
 			)
 		)
 		(property "Price" "None"
-			(at 36.83 172.72 0)
+			(at 36.83 180.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8480,7 +8524,7 @@
 			)
 		)
 		(property "Check_prices" "https://www.snapeda.com/parts/TPD4E1B06DCKR/Texas+Instruments/view-part/?ref=eda"
-			(at 36.83 172.72 0)
+			(at 36.83 180.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8490,7 +8534,7 @@
 			)
 		)
 		(property "STANDARD" "Manufacturer Recommendations"
-			(at 36.83 172.72 0)
+			(at 36.83 180.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8500,7 +8544,7 @@
 			)
 		)
 		(property "PARTREV" "C"
-			(at 36.83 172.72 0)
+			(at 36.83 180.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8510,7 +8554,7 @@
 			)
 		)
 		(property "SnapEDA_Link" "https://www.snapeda.com/parts/TPD4E1B06DCKR/Texas+Instruments/view-part/?ref=snap"
-			(at 36.83 172.72 0)
+			(at 36.83 180.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8520,7 +8564,7 @@
 			)
 		)
 		(property "MP" "TPD4E1B06DCKR"
-			(at 36.83 172.72 0)
+			(at 36.83 180.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8530,7 +8574,7 @@
 			)
 		)
 		(property "Purchase-URL" "https://www.snapeda.com/api/url_track_click_mouser/?unipart_id=46121&manufacturer=Texas Instruments&part_name=TPD4E1B06DCKR&search_term=None"
-			(at 36.83 172.72 0)
+			(at 36.83 180.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8540,7 +8584,7 @@
 			)
 		)
 		(property "Description_1" "Quad 0.7-pF, ±5.5-V, ±12-kV ESD protection diode with 0.5-nA max leakage in SOT & SC70 packages"
-			(at 36.83 172.72 0)
+			(at 36.83 180.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8550,7 +8594,7 @@
 			)
 		)
 		(property "MANUFACTURER" "Texas Instruments"
-			(at 36.83 172.72 0)
+			(at 36.83 180.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8560,7 +8604,7 @@
 			)
 		)
 		(property "Availability" "In Stock"
-			(at 36.83 172.72 0)
+			(at 36.83 180.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8570,7 +8614,7 @@
 			)
 		)
 		(property "SNAPEDA_PN" "TPD4E1B06DCKR"
-			(at 36.83 172.72 0)
+			(at 36.83 180.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)

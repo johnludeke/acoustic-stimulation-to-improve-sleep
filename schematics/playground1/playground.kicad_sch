@@ -3847,6 +3847,89 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Mechanical:MountingHole"
+			(pin_names
+				(offset 1.016)
+			)
+			(exclude_from_sim no)
+			(in_bom no)
+			(on_board yes)
+			(property "Reference" "H"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "MountingHole"
+				(at 0 3.175 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Mounting Hole without connection"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "mounting hole"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "MountingHole*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "MountingHole_0_1"
+				(circle
+					(center 0 0)
+					(radius 1.27)
+					(stroke
+						(width 1.27)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "PIC32MX250F128B_I_SS:PIC32MX250F128B_I_SS"
 			(pin_names
 				(offset 1.016)
@@ -6335,6 +6418,18 @@
 		(uuid 43a7a0bb-482c-49b0-a5bf-0a60599634ac)
 	)
 	(rectangle
+		(start 78.74 180.34)
+		(end 124.46 241.3)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid 4a4cb38d-c884-41ac-a270-ab3363154e11)
+	)
+	(rectangle
 		(start 125.73 180.34)
 		(end 353.06 241.3)
 		(stroke
@@ -6404,6 +6499,16 @@
 		)
 		(uuid "2b2323f7-5e00-4cda-8fa0-41c69bc95e0d")
 	)
+	(text "MOUNTING"
+		(exclude_from_sim no)
+		(at 85.852 182.88 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "3a36e829-ad57-4e3e-af88-31889f9aca65")
+	)
 	(text "UART debug header"
 		(exclude_from_sim no)
 		(at 96.012 137.16 0)
@@ -6424,9 +6529,19 @@
 		)
 		(uuid "4f2cdd2a-63ed-481a-aa10-5ab2dcf792b1")
 	)
+	(text "CONNECTIONS"
+		(exclude_from_sim no)
+		(at 86.106 87.122 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "734dfad3-8b90-46d2-bda7-3720b17370fd")
+	)
 	(text "Input Connector"
 		(exclude_from_sim no)
-		(at 94.488 90.678 0)
+		(at 93.98 92.71 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -7456,7 +7571,7 @@
 	)
 	(wire
 		(pts
-			(xy 87.63 106.68) (xy 92.71 106.68)
+			(xy 86.36 106.68) (xy 92.71 106.68)
 		)
 		(stroke
 			(width 0)
@@ -7496,7 +7611,7 @@
 	)
 	(wire
 		(pts
-			(xy 102.87 167.64) (xy 107.95 167.64)
+			(xy 105.41 167.64) (xy 113.03 167.64)
 		)
 		(stroke
 			(width 0)
@@ -7566,7 +7681,7 @@
 	)
 	(wire
 		(pts
-			(xy 92.71 99.06) (xy 87.63 99.06)
+			(xy 92.71 99.06) (xy 86.36 99.06)
 		)
 		(stroke
 			(width 0)
@@ -7776,7 +7891,7 @@
 	)
 	(wire
 		(pts
-			(xy 102.87 172.72) (xy 107.95 172.72)
+			(xy 105.41 172.72) (xy 113.03 172.72)
 		)
 		(stroke
 			(width 0)
@@ -7896,7 +8011,7 @@
 	)
 	(wire
 		(pts
-			(xy 87.63 101.6) (xy 92.71 101.6)
+			(xy 86.36 101.6) (xy 92.71 101.6)
 		)
 		(stroke
 			(width 0)
@@ -8006,7 +8121,7 @@
 	)
 	(wire
 		(pts
-			(xy 87.63 104.14) (xy 92.71 104.14)
+			(xy 86.36 104.14) (xy 92.71 104.14)
 		)
 		(stroke
 			(width 0)
@@ -8236,7 +8351,7 @@
 	)
 	(wire
 		(pts
-			(xy 346.71 214.63) (xy 349.25 214.63)
+			(xy 345.44 214.63) (xy 347.98 214.63)
 		)
 		(stroke
 			(width 0)
@@ -8356,7 +8471,7 @@
 	)
 	(wire
 		(pts
-			(xy 85.09 172.72) (xy 90.17 172.72)
+			(xy 82.55 172.72) (xy 92.71 172.72)
 		)
 		(stroke
 			(width 0)
@@ -8506,7 +8621,7 @@
 	)
 	(wire
 		(pts
-			(xy 339.09 214.63) (xy 335.28 214.63)
+			(xy 337.82 214.63) (xy 335.28 214.63)
 		)
 		(stroke
 			(width 0)
@@ -8726,7 +8841,7 @@
 	)
 	(wire
 		(pts
-			(xy 102.87 165.1) (xy 107.95 165.1)
+			(xy 105.41 165.1) (xy 113.03 165.1)
 		)
 		(stroke
 			(width 0)
@@ -8876,7 +8991,7 @@
 	)
 	(wire
 		(pts
-			(xy 85.09 165.1) (xy 90.17 165.1)
+			(xy 82.55 165.1) (xy 92.71 165.1)
 		)
 		(stroke
 			(width 0)
@@ -8946,7 +9061,7 @@
 	)
 	(wire
 		(pts
-			(xy 102.87 170.18) (xy 107.95 170.18)
+			(xy 105.41 170.18) (xy 113.03 170.18)
 		)
 		(stroke
 			(width 0)
@@ -9176,7 +9291,7 @@
 	)
 	(wire
 		(pts
-			(xy 85.09 170.18) (xy 90.17 170.18)
+			(xy 82.55 170.18) (xy 92.71 170.18)
 		)
 		(stroke
 			(width 0)
@@ -9216,7 +9331,7 @@
 	)
 	(wire
 		(pts
-			(xy 87.63 96.52) (xy 92.71 96.52)
+			(xy 86.36 96.52) (xy 92.71 96.52)
 		)
 		(stroke
 			(width 0)
@@ -9536,7 +9651,7 @@
 	)
 	(wire
 		(pts
-			(xy 85.09 167.64) (xy 90.17 167.64)
+			(xy 82.55 167.64) (xy 92.71 167.64)
 		)
 		(stroke
 			(width 0)
@@ -9915,7 +10030,7 @@
 		(uuid "ff9e761b-1702-434e-b5e3-a56812f49978")
 	)
 	(label "D18"
-		(at 107.95 170.18 0)
+		(at 113.03 170.18 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -9975,7 +10090,7 @@
 		(uuid "1398f3e4-53ba-4b50-8850-212640661e09")
 	)
 	(label "PGC"
-		(at 85.09 167.64 0)
+		(at 82.55 167.64 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10155,7 +10270,7 @@
 		(uuid "4fca133f-8e15-4cfc-ba9a-f83fad8fa521")
 	)
 	(label "AGND"
-		(at 349.25 214.63 0)
+		(at 347.98 214.63 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10185,7 +10300,7 @@
 		(uuid "57fa5305-9309-4a59-8a23-87a390096181")
 	)
 	(label "DVDD_3V3"
-		(at 85.09 170.18 0)
+		(at 82.55 170.18 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10235,7 +10350,7 @@
 		(uuid "6aa870d9-596a-441f-93c2-dd8378d5aac6")
 	)
 	(label "BOOT_EN"
-		(at 107.95 165.1 0)
+		(at 113.03 165.1 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10355,7 +10470,7 @@
 		(uuid "80af034b-ea97-4643-a323-01385f87a1e2")
 	)
 	(label "D13"
-		(at 85.09 165.1 0)
+		(at 82.55 165.1 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10395,7 +10510,7 @@
 		(uuid "86934a5d-bf1a-4359-832e-ce7e76757e71")
 	)
 	(label "1N"
-		(at 87.63 99.06 0)
+		(at 86.36 99.06 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10405,7 +10520,7 @@
 		(uuid "8724700d-4b18-4a87-bb75-0888a7e1e74f")
 	)
 	(label "PGD"
-		(at 107.95 172.72 0)
+		(at 113.03 172.72 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10415,7 +10530,7 @@
 		(uuid "87e0a5a3-732e-48de-a6a6-c6a6d0a96fa6")
 	)
 	(label "MCLR"
-		(at 107.95 167.64 0)
+		(at 113.03 167.64 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10495,7 +10610,7 @@
 		(uuid "900b9878-333f-480e-97eb-7b6422be27ea")
 	)
 	(label "SRB1"
-		(at 87.63 101.6 0)
+		(at 86.36 101.6 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10585,7 +10700,7 @@
 		(uuid "a7e59329-aa1d-4049-9891-3288eee38bac")
 	)
 	(label "BIAS"
-		(at 87.63 104.14 0)
+		(at 86.36 104.14 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10665,7 +10780,7 @@
 		(uuid "bcdcec54-5654-4d43-9b8c-a6b1638d0394")
 	)
 	(label "AGND"
-		(at 85.09 172.72 0)
+		(at 82.55 172.72 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10685,7 +10800,7 @@
 		(uuid "c081177d-1c43-453f-9ba2-5cfea7bfb87a")
 	)
 	(label "1P"
-		(at 87.63 96.52 0)
+		(at 86.36 96.52 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10775,7 +10890,7 @@
 		(uuid "cb773809-7f73-44f3-92ee-0cd3b5b70c61")
 	)
 	(label "AGND"
-		(at 87.63 106.68 0)
+		(at 86.36 106.68 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -12051,6 +12166,70 @@
 			(project ""
 				(path "/238de170-6a90-40ad-afaf-ab931b754487"
 					(reference "#FLG01")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole")
+		(at 90.17 210.82 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "28501f4d-d246-4206-8f18-974cb259f717")
+		(property "Reference" "H4"
+			(at 92.71 209.5499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "MountingHole"
+			(at 92.71 212.0899 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3"
+			(at 90.17 210.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 90.17 210.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole without connection"
+			(at 90.17 210.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(instances
+			(project "playground"
+				(path "/238de170-6a90-40ad-afaf-ab931b754487"
+					(reference "H4")
 					(unit 1)
 				)
 			)
@@ -13710,6 +13889,70 @@
 			(project "playground"
 				(path "/238de170-6a90-40ad-afaf-ab931b754487"
 					(reference "C22")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole")
+		(at 90.17 198.12 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "79b565e7-a6bb-4328-8d3c-aa36fb777903")
+		(property "Reference" "H2"
+			(at 92.71 196.8499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "MountingHole"
+			(at 92.71 199.3899 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3"
+			(at 90.17 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 90.17 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole without connection"
+			(at 90.17 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(instances
+			(project "playground"
+				(path "/238de170-6a90-40ad-afaf-ab931b754487"
+					(reference "H2")
 					(unit 1)
 				)
 			)
@@ -15495,33 +15738,35 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C")
-		(at 342.9 214.63 90)
+		(lib_id "Mechanical:MountingHole")
+		(at 90.17 191.77 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "c74a9fa6-ba9a-417d-9153-1517476006f0")
-		(property "Reference" "C32"
-			(at 342.9 207.01 90)
+		(uuid "c6693489-6241-4f60-bd8f-a166649c1ee0")
+		(property "Reference" "H1"
+			(at 92.71 190.4999 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
-		(property "Value" "10uF"
-			(at 342.9 209.55 90)
+		(property "Value" "MountingHole"
+			(at 92.71 193.0399 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
-			(at 346.71 213.6648 0)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3"
+			(at 90.17 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15530,7 +15775,69 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 342.9 214.63 0)
+			(at 90.17 191.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole without connection"
+			(at 90.17 191.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(instances
+			(project ""
+				(path "/238de170-6a90-40ad-afaf-ab931b754487"
+					(reference "H1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 341.63 214.63 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "c74a9fa6-ba9a-417d-9153-1517476006f0")
+		(property "Reference" "C32"
+			(at 341.63 207.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10uF"
+			(at 341.63 209.55 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+			(at 345.44 213.6648 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 341.63 214.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15539,7 +15846,7 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 342.9 214.63 0)
+			(at 341.63 214.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15769,6 +16076,70 @@
 		)
 	)
 	(symbol
+		(lib_id "Mechanical:MountingHole")
+		(at 90.17 204.47 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "e3d313b5-6f16-40f1-bd54-791d8006af27")
+		(property "Reference" "H3"
+			(at 92.71 203.1999 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "MountingHole"
+			(at 92.71 205.7399 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3"
+			(at 90.17 204.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 90.17 204.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole without connection"
+			(at 90.17 204.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(instances
+			(project "playground"
+				(path "/238de170-6a90-40ad-afaf-ab931b754487"
+					(reference "H3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:Crystal")
 		(at 156.21 215.9 90)
 		(unit 1)
@@ -15796,7 +16167,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm"
 			(at 156.21 215.9 0)
 			(effects
 				(font
@@ -16141,7 +16512,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_02x04_Odd_Even")
-		(at 95.25 167.64 0)
+		(at 97.79 167.64 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -16150,7 +16521,7 @@
 		(fields_autoplaced yes)
 		(uuid "fcd4c2e8-a8ca-4519-8c21-13169f0db9b7")
 		(property "Reference" "J4"
-			(at 96.52 158.75 0)
+			(at 99.06 158.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16158,7 +16529,7 @@
 			)
 		)
 		(property "Value" "Conn_02x04_Odd_Even"
-			(at 96.52 161.29 0)
+			(at 99.06 161.29 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16166,7 +16537,7 @@
 			)
 		)
 		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_2x04_P2.54mm_Vertical"
-			(at 95.25 167.64 0)
+			(at 97.79 167.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16175,7 +16546,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 95.25 167.64 0)
+			(at 97.79 167.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16184,7 +16555,7 @@
 			)
 		)
 		(property "Description" "Generic connector, double row, 02x04, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 95.25 167.64 0)
+			(at 97.79 167.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16252,7 +16623,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "Crystal:Crystal_SMD_HC49-SD"
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
 			(at 166.6748 62.23 0)
 			(effects
 				(font

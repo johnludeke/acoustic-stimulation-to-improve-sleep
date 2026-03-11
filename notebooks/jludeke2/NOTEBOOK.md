@@ -1,4 +1,17 @@
 # John Ludeke's Lab Notebook for ECE 445
+## Friday, March 6
+### Quick update
+Worked on goign through the errors from the schematic so that it was cleanly wired. Can continue work on the PCB next update.
+
+## Wednesday, March 4
+### Overview
+Continued work on PCB schematic. Finished PIC32, adjusted regulators, and added input components. I also cleaned up the schematic to be more organized and optimal.
+
+### Picture of progress
+You can see how the new schematic compared to before is more filled out and more optimized. It can be seen how packed the board is getting. Still missing is the Bluetooth chip for communication out.
+<img width="975" height="733" alt="image" src="https://github.com/user-attachments/assets/2b10cfdb-d6e6-4d06-9716-b6e6e823780a" />
+
+
 ## Monday, March 2
 ### Quick update
 Continued work on power schematic, adjusted a few things. Needed to add capacitors in parallel to add more denoising. Also started work on inputs to our microcontroller, the PIC32.
@@ -82,6 +95,7 @@ Finished up our project proposal.
 ### What's next?
 - Put parts into a ready-to-order spreadsheet.
 - Create design document.
+
 
 
 

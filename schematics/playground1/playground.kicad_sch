@@ -10324,7 +10324,7 @@
 		)
 		(uuid "79e627bb-49da-401c-8282-524e0d2bd113")
 	)
-	(label "BIAS_DRV"
+	(label "BIAS"
 		(at 332.74 48.26 0)
 		(effects
 			(font
@@ -15796,7 +15796,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Crystal:Crystal_SMD_3215-2Pin_3.2x1.5mm"
 			(at 156.21 215.9 0)
 			(effects
 				(font

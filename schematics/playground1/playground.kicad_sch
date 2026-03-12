@@ -10189,7 +10189,7 @@
 		)
 		(uuid "30682f72-e70e-43b5-92d1-9beb4292f338")
 	)
-	(label "AGND"
+	(label "DGND"
 		(at 328.93 196.85 0)
 		(effects
 			(font
@@ -10269,7 +10269,7 @@
 		)
 		(uuid "4fca133f-8e15-4cfc-ba9a-f83fad8fa521")
 	)
-	(label "AGND"
+	(label "DGND"
 		(at 347.98 214.63 0)
 		(effects
 			(font
@@ -10439,7 +10439,7 @@
 		)
 		(uuid "79e627bb-49da-401c-8282-524e0d2bd113")
 	)
-	(label "BIAS_DRV"
+	(label "BIAS"
 		(at 332.74 48.26 0)
 		(effects
 			(font
@@ -10449,7 +10449,7 @@
 		)
 		(uuid "7a65ce7d-ae02-4f6f-a4fc-7202c2ff7dcd")
 	)
-	(label "AGND"
+	(label "DGND"
 		(at 135.89 208.28 180)
 		(effects
 			(font
@@ -10659,7 +10659,7 @@
 		)
 		(uuid "a0411a74-d0b6-4d96-ad45-01457e50ff75")
 	)
-	(label "AGND"
+	(label "DGND"
 		(at 175.26 212.09 180)
 		(effects
 			(font
@@ -10749,7 +10749,7 @@
 		)
 		(uuid "b7b357e1-7c66-457c-b633-a2ead3e67466")
 	)
-	(label "AGND"
+	(label "DGND"
 		(at 328.93 217.17 0)
 		(effects
 			(font

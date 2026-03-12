@@ -10319,7 +10319,7 @@
 		)
 		(uuid "602ce884-3258-4e08-a3ca-eea85d2a76f0")
 	)
-	(label "AGND"
+	(label "DGND"
 		(at 196.85 91.44 0)
 		(effects
 			(font
@@ -10719,7 +10719,7 @@
 		)
 		(uuid "aaeede9f-b604-42ed-a34e-b8275552bcb8")
 	)
-	(label "AGND"
+	(label "DGND"
 		(at 224.79 83.82 0)
 		(effects
 			(font
@@ -10759,7 +10759,7 @@
 		)
 		(uuid "b9a91a60-962c-40a2-a075-8dbfe01b6030")
 	)
-	(label "AGND"
+	(label "DGND"
 		(at 243.84 83.82 0)
 		(effects
 			(font

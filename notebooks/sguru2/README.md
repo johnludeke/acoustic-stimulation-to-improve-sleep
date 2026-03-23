@@ -6,13 +6,12 @@ need srb2 routing from input connector?
 3/11
 notes on pcb - moving power entry to agnd side
 
-some day - pcb implementation. doing schematic. ads1299 power, input output, capacitor and bias connections (and their purpose, design decisions)
-discuss digital and analog rails for power, and how those route to the ads - our decision to make the +-2.5V analog rails to 0-5V analog rails (so avss=agnd)(talk about why we did this and what this does)
-
 3/10
 breadboard development: problem - ads1299 components were not breadboardable, so pcb printing (whatever word for putting component on would have to be soldered not breadboard pins). we pivoted and worked on audio subsystem components, perfect since we were implementing in schematic for next pcb order. 
 
 media: picture of breadboard (speaker connected to microcontroller...), code for pink noise generation
+
+
 
 initially made random white noise (2 lines) to confirm working, it made a faint noise we didn't hear till we increased amplitude. then made pink noise (refer to code, how to make pink noise)
 
@@ -22,17 +21,28 @@ next steps (maybe next entry) - looking into how to make that pink noise phase a
 picking up components - we got the ads1299, *whatever else part we picked up* our goal for the breadboard demo is to get an visualize an eeg signal. still waiting on pic32 microcontroller.
 
 finalized signal processing subsystem in schematic by adding input connector, bias protection (whatever the compoenents between electrode and ads are). these use the reference and bias channels (in our case, m2 i think) to support the input channel c3 sent to the ads. we plan on using one channel as it is supported by paper (cite) and would minimize latency in data processing and sws dection (provide support for this). also minimizes size of signal processing subsystem on pcb, better for over all comfort. 
+<img width="853" height="494" alt="Screenshot 2026-03-23 at 2 45 01 PM" src="https://github.com/user-attachments/assets/3002cdad-c230-4e04-899f-226ab506b2b9" />
+
 
 media: pictures of those parts on schematic
 
 For PCB design, I assigned footprints to all our parts in each subsystem, looking into capacitor/resister threshold-size constraints,
 
 *talk about some design decisions we made in the process*
+
+3/3
+pcb implementation. doing schematic. ads1299 power, input output, capacitor and bias connections (and their purpose, design decisions)
+discuss digital and analog rails for power, and how those route to the ads - our decision to make the +-2.5V analog rails to 0-5V analog rails (so avss=agnd)(talk about why we did this and what this does)
+
+talk about the key pins/regions of the ads1299, their purpose, and what we did to implement those in our shcematic
+
 2/25
 
 considered dongle development for *whatever comm protocal cyton +ble module use, some kind of hgiehr bitrate*, decided we could make our device more accessible by communicating over *regular bluetooth, something about 1 channel info needing lower bitratei think*
 
 include math justification for ble decision from design document
+
+finalizing specific components, including ads with 8 channels matching our cap if we want to expand. *just talk about stuff from component list in design doc idk*
 
 Tuesday - Feb 24
 

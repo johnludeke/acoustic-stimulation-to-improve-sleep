@@ -3,13 +3,19 @@ skeptical about:
 
 need srb2 routing from input connector?
 
+general pcb routing
+
 3/11
-notes on pcb - moving power entry to agnd side
+pcb organizing and routing. pins were divided by 16 on each side of the ads, put capacitors compactly along each relevant side corresponding to *what each set of 16 pins on side of ads corresponds to *
+notes on pcb - considering moving power entry to agnd side, but its actually ok 
 
 3/10
 breadboard development: problem - ads1299 components were not breadboardable, so pcb printing (whatever word for putting component on would have to be soldered not breadboard pins). we pivoted and worked on audio subsystem components, perfect since we were implementing in schematic for next pcb order. 
 
+
 media: picture of breadboard (speaker connected to microcontroller...), code for pink noise generation
+<img width="277" height="587" alt="Screenshot 2026-03-23 at 3 01 41 PM" src="https://github.com/user-attachments/assets/9825c349-c282-4628-9cb7-45ee67294c08" />
+
 
 
 

@@ -1,4 +1,17 @@
 # John Ludeke's Lab Notebook for ECE 445
+## Monday, March 8 - Thursday, March 11
+### Overview
+Completed wiring for the schematic. Involved some bug bashing and design changes.
+
+### Schematic update
+Note the addition of mounting holes, as well as slight differences in connection. A main difference is the power subsystem being digital grounded rather than analog grounded.
+<img width="957" height="718" alt="image" src="https://github.com/user-attachments/assets/7f83633b-6a37-4f8b-af1d-612d34cdd85e" />
+
+### PCB diagram
+This was difficult to wire, and took a good amount of time. Main considerations were where to have our analog and digital ground, and how to organize the pieces so that traces didn't have to go too far. Note here that the ADS should be far from our power subsystem to reduce noise. The ADS also contains both AGND and DGND, but sits on AGND. The PIC32 sits on the DGND.
+<img width="936" height="677" alt="image" src="https://github.com/user-attachments/assets/dcdf3431-0089-4c96-af1b-31ef7403ba23" />
+
+
 ## Friday, March 6
 ### Quick update
 Worked on goign through the errors from the schematic so that it was cleanly wired. Can continue work on the PCB next update.

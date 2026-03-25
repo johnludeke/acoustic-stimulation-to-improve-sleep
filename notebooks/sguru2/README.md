@@ -1,3 +1,6 @@
+3/24 - fixing dgnd pin connections
+3/23 - fixing agnd pin connections
+
 3/12
 skeptical about:
 

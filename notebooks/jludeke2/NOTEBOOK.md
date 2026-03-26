@@ -1,4 +1,17 @@
 # John Ludeke's Lab Notebook for ECE 445
+## Thursday, March 26
+### Overview
+Cleaned up schematic for audio subsystem and wired it in.
+
+### Schematic update
+I just organized the schematic so that it is clean and readable with no components too close together.
+<img width="1240" height="721" alt="image" src="https://github.com/user-attachments/assets/abf8b020-8013-4cbd-a130-07e3a6b3a74f" />
+
+### PCB update
+The PCB had to have its BLE system moved to be closer to the ADS so that the audio subsystem could be as far from it as possible (since the audio subsystem is noisy and we don't want to disrupt the ADS).
+<img width="836" height="740" alt="image" src="https://github.com/user-attachments/assets/0adb9873-ba31-4f6b-8b5a-313cfca098e7" />
+
+
 ## Wednesday, March 25
 ### Overview
 Added bluetooth chip to schematic and PCB.

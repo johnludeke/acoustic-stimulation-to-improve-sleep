@@ -16424,7 +16424,7 @@
 		(layer "Edge.Cuts")
 		(uuid "803209c6-6fe3-4051-bb26-f33e2fbfddaa")
 	)
-	(gr_text "Team 18\nSleep Stimulation Rev 1"
+	(gr_text "Team 18\nSleep Stimulation Rev 2"
 		(at 101 72 0)
 		(layer "F.Cu")
 		(uuid "0e750408-cd0d-4dd9-ac35-c4f91e3423bc")

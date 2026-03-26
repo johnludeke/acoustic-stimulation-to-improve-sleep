@@ -8272,16 +8272,6 @@
 	)
 	(wire
 		(pts
-			(xy 368.3 185.42) (xy 368.3 189.23)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1a0d72f3-51a7-4fae-998a-0a8ad5e42912")
-	)
-	(wire
-		(pts
 			(xy 91.44 97.79) (xy 91.44 100.33)
 		)
 		(stroke
@@ -9102,7 +9092,7 @@
 	)
 	(wire
 		(pts
-			(xy 375.92 189.23) (xy 375.92 209.55)
+			(xy 375.92 185.42) (xy 375.92 209.55)
 		)
 		(stroke
 			(width 0)
@@ -9112,7 +9102,7 @@
 	)
 	(wire
 		(pts
-			(xy 368.3 167.64) (xy 360.68 167.64)
+			(xy 375.92 167.64) (xy 360.68 167.64)
 		)
 		(stroke
 			(width 0)
@@ -9189,16 +9179,6 @@
 			(type default)
 		)
 		(uuid "576d05f9-e9c0-4193-8b5d-2d4c376b2d7f")
-	)
-	(wire
-		(pts
-			(xy 368.3 189.23) (xy 375.92 189.23)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "57d6d52e-11b0-442e-98cd-3b772f95e10e")
 	)
 	(wire
 		(pts
@@ -9652,7 +9632,7 @@
 	)
 	(wire
 		(pts
-			(xy 368.3 167.64) (xy 368.3 177.8)
+			(xy 375.92 167.64) (xy 375.92 177.8)
 		)
 		(stroke
 			(width 0)
@@ -19055,7 +19035,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 368.3 181.61 0)
+		(at 375.92 181.61 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -19064,7 +19044,7 @@
 		(fields_autoplaced yes)
 		(uuid "c6278607-e9a2-4fe5-b519-eabce74ef613")
 		(property "Reference" "C40"
-			(at 372.11 180.3399 0)
+			(at 379.73 180.3399 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19073,7 +19053,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 372.11 182.8799 0)
+			(at 379.73 182.8799 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19082,7 +19062,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
-			(at 369.2652 185.42 0)
+			(at 376.8852 185.42 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19091,7 +19071,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 368.3 181.61 0)
+			(at 375.92 181.61 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19100,7 +19080,7 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 368.3 181.61 0)
+			(at 375.92 181.61 0)
 			(effects
 				(font
 					(size 1.27 1.27)

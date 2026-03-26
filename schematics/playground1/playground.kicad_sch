@@ -795,130 +795,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Device:R"
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 0)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "R"
-				(at 2.032 0 90)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "R"
-				(at 0 0 90)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at -1.778 0 90)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "~"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "Resistor"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "R res resistor"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "R_*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "R_0_1"
-				(rectangle
-					(start -1.016 -2.54)
-					(end 1.016 2.54)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "R_1_1"
-				(pin passive line
-					(at 0 3.81 270)
-					(length 1.27)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -3.81 90)
-					(length 1.27)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "Device:Speaker"
 			(pin_names
 				(offset 0)
@@ -7801,12 +7677,6 @@
 		(uuid "f28ccddb-0b9e-467a-8118-a2f8181a6253")
 	)
 	(junction
-		(at 368.3 189.23)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "f7e52f2e-675c-49c6-9a87-85e00be55088")
-	)
-	(junction
 		(at 189.23 107.95)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -8512,16 +8382,6 @@
 	)
 	(wire
 		(pts
-			(xy 368.3 168.91) (xy 368.3 167.64)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "21d3229f-fa88-4127-bb5d-dbbc15717ac3")
-	)
-	(wire
-		(pts
 			(xy 100.33 199.39) (xy 100.33 201.93)
 		)
 		(stroke
@@ -8749,16 +8609,6 @@
 			(type default)
 		)
 		(uuid "318b62f7-3ced-4329-b670-1707e226416b")
-	)
-	(wire
-		(pts
-			(xy 347.98 189.23) (xy 356.87 189.23)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "3287de4a-8560-492e-b4b6-3d090d4caeec")
 	)
 	(wire
 		(pts
@@ -9802,6 +9652,16 @@
 	)
 	(wire
 		(pts
+			(xy 368.3 167.64) (xy 368.3 177.8)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "79132dc6-07d7-43e0-aa14-0a942501e9e9")
+	)
+	(wire
+		(pts
 			(xy 130.81 130.81) (xy 130.81 134.62)
 		)
 		(stroke
@@ -10812,16 +10672,6 @@
 	)
 	(wire
 		(pts
-			(xy 368.3 176.53) (xy 368.3 177.8)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b751ac5e-509a-4da8-aff5-7ecdcab58faa")
-	)
-	(wire
-		(pts
 			(xy 120.65 208.28) (xy 134.62 208.28)
 		)
 		(stroke
@@ -11509,16 +11359,6 @@
 			(type default)
 		)
 		(uuid "e2bc8d82-91a0-449f-bd51-decd0e1669e6")
-	)
-	(wire
-		(pts
-			(xy 364.49 189.23) (xy 368.3 189.23)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e38c2537-fe0e-4ba6-acbd-1d5dfca8be38")
 	)
 	(wire
 		(pts
@@ -15200,76 +15040,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:R")
-		(at 368.3 172.72 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "32a65d51-a124-4be1-863b-e1e78c546e3c")
-		(property "Reference" "R6"
-			(at 370.84 171.4499 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "1k"
-			(at 370.84 173.9899 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 366.522 172.72 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 368.3 172.72 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 368.3 172.72 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "d70545f0-c25b-4f19-9cb2-597d71a09b7b")
-		)
-		(pin "1"
-			(uuid "44a5b66b-ac6a-429d-89c7-14e69a9b3a11")
-		)
-		(instances
-			(project "playground"
-				(path "/238de170-6a90-40ad-afaf-ab931b754487"
-					(reference "R6")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "ble_symbols:C")
 		(at 200.66 135.89 0)
 		(unit 1)
@@ -15849,74 +15619,6 @@
 			(project "playground"
 				(path "/238de170-6a90-40ad-afaf-ab931b754487"
 					(reference "C4")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 360.68 189.23 270)
-		(mirror x)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "4a6b1536-1fcc-425e-9162-380afcd056bb")
-		(property "Reference" "R7"
-			(at 360.68 182.88 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "100k"
-			(at 360.68 185.42 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 360.68 191.008 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 360.68 189.23 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 360.68 189.23 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "0a470aa2-5847-47ad-b108-2a6d365f4ab8")
-		)
-		(pin "1"
-			(uuid "16abc0af-8275-4e5f-bd91-bd23ffbe529e")
-		)
-		(instances
-			(project "playground"
-				(path "/238de170-6a90-40ad-afaf-ab931b754487"
-					(reference "R7")
 					(unit 1)
 				)
 			)
@@ -19370,7 +19072,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "1uF"
+		(property "Value" "0.1uF"
 			(at 372.11 182.8799 0)
 			(effects
 				(font

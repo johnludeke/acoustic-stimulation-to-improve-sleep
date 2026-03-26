@@ -1,4 +1,22 @@
 # John Ludeke's Lab Notebook for ECE 445
+## Wednesday, March 25
+### Overview
+Added bluetooth chip to schematic and PCB.
+
+### Schematic update
+Included in this update are the addition of test pins. This allow us to connect to the chip with a programmer to flash firmware (as well as test if things aren't working as expected). The BLE chip connects the RXD and TXD pinouts of the PIC32 to itself which it can then transmit wirelessly.
+<img width="1053" height="609" alt="image" src="https://github.com/user-attachments/assets/a9a7255c-4cb2-4d73-9df1-8cd7407312c4" />
+
+### PCB update
+The PCB was a little more complicated to update. I had to edit the footprint of the BLE chip to include the correct areas on the chip that are required to not have any copper in front of them (to make the bluetooth transmission possible). This involved making a custom symbol library for version control so that other members could also pull it.
+<img width="727" height="653" alt="image" src="https://github.com/user-attachments/assets/d18aa953-0f5a-47b3-9dab-49f943b805c6" />
+
+
+## Tuesday, March 24
+### Quick update
+Sid worked on a majority of the DRC errors in the PCB, but there were a few left to clean up. The task was somewhat laborious, but not too bad. Many errors had to do with bad grounding of AGND or DGND, along with some connections that were not complete. After today, there are no errors with the PCB design, which means any error should be either oversight in the architecture, or bad connections when soldering.
+
+
 ## Monday, March 8 - Thursday, March 11
 ### Overview
 Completed wiring for the schematic. Involved some bug bashing and design changes.

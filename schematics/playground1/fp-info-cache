@@ -1,4 +1,4 @@
-27242953750083317
+27244728242444262
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -107904,3 +107904,10 @@ Varistor VF
 0
 2
 2
+ble_footprints
+Raytac_MDBT42Q
+Multiprotocol radio SoC module https://www.raytac.com/download/index.php?index_id=27
+wireless 2.4 GHz Bluetooth ble zigbee 802.15.4 thread nordic raytac nrf52832
+0
+41
+41

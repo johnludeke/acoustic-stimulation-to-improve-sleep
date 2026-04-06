@@ -1,4 +1,18 @@
 # John Ludeke's Lab Notebook for ECE 445
+## Monday, March 30 - Friday, April 3
+### Overview
+Create a new PCB that is dedicated to the audio processor. The reason for this is that there is a lot that can go wrong with the more complicated board previously and we want a proof of concept that puts our priority at performing the audio processing and generation. This new board has the audio subsystem, a simpler power subsystem, and a microcontroller that allows us to take in signals and output audio. We leave the signal processing to the Cyton board.
+
+This PCB is also easier to edit, meaning we can make revisions fast if needed. The parts used are simpler and quicker to order as well, and uses parts from our original order where possible. We also will place this order ourselves to get it faster.
+
+### Schematic
+<img width="892" height="704" alt="image" src="https://github.com/user-attachments/assets/92dd1e8b-656e-4647-8f01-2fe38c2eb1ab" />
+
+### PCB
+<img width="601" height="682" alt="image" src="https://github.com/user-attachments/assets/0966bcc1-3711-4692-9c89-6c75cb7bd884" />
+
+
+
 ## Thursday, March 26
 ### Overview
 Cleaned up schematic for audio subsystem and wired it in. After these updates, the entire PCB is complete. In addition, all parts will be available, and there are no errors or warnings in the ERC and DRC.

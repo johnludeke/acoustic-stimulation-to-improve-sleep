@@ -1,4 +1,53 @@
 # John Ludeke's Lab Notebook for ECE 445
+## Monday, April 6
+### Overview
+Using our audio subsystem, add an input for the waveform generator. Create software that listens for the incoming wave, and determines its frequency and amplitude. Then, based on a certain frequency threshold, output pink noise audio. Create a Jupyter notebook that outputs this audio as well.
+
+### Pink Noise Algorithm
+```
+// Pink noise (Voss-McCartney)
+
+static int32_t pinkRows[16] = {0};
+static int32_t pinkRunningSum = 0;
+static uint32_t pinkIndex = 0;
+
+uint8_t pinkNoiseSample() {
+  uint32_t lastIndex = pinkIndex;
+  pinkIndex++;
+
+  uint32_t diff = lastIndex ^ pinkIndex;
+  for (int i = 0; i < 16; i++) {
+    if (diff & (1u << i)) {
+      pinkRunningSum -= pinkRows[i];
+      // Map esp_random() to signed [-32768, 32767]
+      pinkRows[i] = (int32_t)(esp_random() >> 16) - 32768;
+      pinkRunningSum += pinkRows[i];
+    }
+  }
+
+  // White noise contribution
+  int32_t white = (int32_t)(esp_random() >> 16) - 32768;
+  int32_t raw   = pinkRunningSum + white;
+
+  // Divisor ~1000 targets ~92% PWM range utilization (intentionally louder than exact)
+  int32_t scaled = (raw / 1000) + 128;
+  if (scaled < 0)   scaled = 0;
+  if (scaled > 255) scaled = 255;
+  return (uint8_t)scaled;
+}
+```
+This code works by creating 16 columns. Each column updates its frequency based on its column number. First columns update their frequencies very frequently, and later columns less so. This approximates the 1/f graph of typical pink noise. Additionally, we add a generic white noise to the end signal to smooth it out.
+
+### Detect Waves State Machine
+This is how our system will work in the final product. It is simple and effective, and follows the research papers provided to us that are supposed to prolong slow-wave sleep.
+
+1. Listen for the desired frequency. If not found, loop back to 1.
+2. Play audio at the first peak.
+3. Play audio at the second peak.
+4. Wait for the desired time.
+5. Back to 1.
+
+
 ## Monday, March 30 - Friday, April 3
 ### Overview
 Create a new PCB that is dedicated to the audio processor. The reason for this is that there is a lot that can go wrong with the more complicated board previously and we want a proof of concept that puts our priority at performing the audio processing and generation. This new board has the audio subsystem, a simpler power subsystem, and a microcontroller that allows us to take in signals and output audio. We leave the signal processing to the Cyton board.

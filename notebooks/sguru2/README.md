@@ -1,3 +1,71 @@
+4/5 — Packet Parsing + Signal Validation
+
+With access to the raw bitstream, I moved on to parsing the incoming data according to the OpenBCI Cyton data format. Each packet begins with a header byte (0xA0) and ends with a footer byte (0xC followed by a counter), with a fixed number of bytes in between representing channel data and metadata.
+
+To verify correct packet reception, I first implemented a simple parser that prints a new line whenever a valid header is detected and a corresponding footer appears at the expected offset. This resulted in consistently formatted packet outputs, with no unexpected bytes or misalignment. This step was important because it confirmed that there was no data corruption or packet loss at the UART level.
+￼
+After confirming packet integrity, I implemented parsing of the EEG channel data. Each channel value is represented as a 24-bit signed integer, so I reconstructed the values from three bytes and converted them into signed integers. These values were then streamed and plotted over time.
+
+To validate correctness, I compared the reconstructed EEG waveform from the ESP32 with the waveform displayed in the OpenBCI GUI. The signals matched in both shape and timing, confirming that the parsing process was accurate and that the data pipeline preserved signal integrity.
+
+￼
+⸻
+
+Design Direction Pivot
+
+At this point, I began reconsidering the system architecture for the final demo. While the original plan was to use our custom PCB (ADS1299 + PIC32) for EEG acquisition and processing, there are practical concerns around bring-up time, particularly with soldering fine-pitch components and debugging low-level firmware.
+
+Given that the OpenBCI Cyton board already implements a nearly identical signal acquisition pipeline to our design  , it may be more efficient to use it directly for the demo. This would allow us to focus on the core contribution of the project—real-time SWS detection and closed-loop audio stimulation—without being blocked by hardware integration issues.
+
+Under this approach, the Cyton board would handle EEG acquisition and digitization, while the ESP32 would take over feature extraction, SWS detection, and audio output. Since the ESP32 is already integrated into our breadboard audio subsystem, this creates a clean and practical pipeline that still aligns with our original system goals.
+
+The next step will be to port the feature extraction logic from Python to the ESP32 and implement a rolling buffer for real-time processing, enabling end-to-end closed-loop operation.
+
+⸻
+
+If you want, I can now:
+	•	do the next week in the same style, or
+	•	tighten this further to match exactly what your TA likes (some classes are picky about tone)
+
+4/4 — Hardware Integration (Cyton → ESP32)
+
+After validating the algorithm in Python, I shifted focus toward implementing a fully embedded pipeline. The goal was to move away from a PC-based system and instead stream EEG data directly into the ESP32, where feature extraction and SWS detection could eventually run in real time.
+
+From the system design, the EEG data is sampled at 250 Hz with 24-bit resolution. This results in a raw data rate of approximately 6 kbps for a single channel, which is well within the capabilities of UART communication. This confirmed that it should be feasible to stream the digitized EEG data directly into the ESP32 without compression or downsampling.
+
+Initially, I attempted to connect the TX pin of the Cyton dongle to the RX pin of the ESP32 to capture the data stream. However, this caused the OpenBCI GUI to stop receiving data after a few seconds, triggering a timeout. This suggested that the connection was interfering with the expected communication pathway.
+
+After investigating the Cyton architecture, I realized that the dongle’s TX pin is not used for streaming EEG data outward. Instead, the EEG data is transmitted wirelessly from the headset to the dongle, where it is received on the RX pin and then forwarded via USB to the computer. By tapping into the TX line, I was effectively probing the wrong side of the communication chain and potentially loading the signal in a way that disrupted the system.
+
+I then switched to connecting the RX pin of the dongle to the ESP32. In this configuration, the ESP32 passively observes the incoming data stream without interfering with the communication between the headset and the GUI. This resolved the issue: the GUI continued to function normally, and I was able to observe a continuous stream of hex data on the ESP32 serial monitor. Disconnecting the wire caused the stream to stop immediately, confirming that the data being observed was indeed the live EEG bitstream.
+
+<img width="615" height="324" alt="OBCI  DONGLE" src="https://github.com/user-attachments/assets/8b10787f-f0fa-437b-bb19-c884beb282fc" />
+
+
+Week of 3/30 — SWS Detection + Real-Time Prototype
+
+This week, I focused on understanding and implementing a single-channel EEG-based slow-wave sleep (SWS) detection algorithm from literature  . The goal was to translate an existing research method into something lightweight enough to eventually run on embedded hardware.
+
+The core idea of the paper is that SWS can be identified using time-domain characteristics of the EEG signal, rather than relying on frequency-domain features or multiple channels. In particular, slow-wave sleep is associated with high-amplitude, low-frequency oscillations, which can be captured by analyzing zero-crossing behavior of the signal.
+
+To prototype this, I used the Sleep-EDF dataset  , which provides labeled EEG recordings segmented into 30-second epochs. I implemented a preprocessing pipeline that mirrors the paper: bandpass filtering (0.3–35 Hz), segmentation into epochs, and further division into 1-second intervals. Within each interval, I subtracted the mean to remove DC offset and computed zero-crossing points (ZCPs), defined as locations where the signal changes sign.
+
+From these zero-crossing points, the signal is divided into segments. These segments encode important temporal information about the waveform. Faster signals produce many short segments, while slower oscillations produce fewer, longer segments. This becomes particularly useful for SWS detection, since slow waves (~1 Hz) naturally lead to longer segment durations.
+
+From this representation, I computed the three primary features:
+	•	x1: mean length of zero-crossing segments
+	•	x2: standard deviation of segment lengths
+	•	x3: weighted area under the signal between zero crossings
+￼<img width="730" height="652" alt="inport natplotlib pyplot as plt" src="https://github.com/user-attachments/assets/9c378b71-64b4-49de-bf29-1de81037d5ee" />
+
+The third feature is especially important because it jointly captures amplitude and temporal behavior. Larger amplitudes increase the area under the curve, while slower oscillations increase the spacing between crossings, so x3 effectively encodes the defining characteristics of slow-wave activity.
+
+After validating feature extraction offline, I moved to a real-time prototype using the OpenBCI Cyton board. I configured the OpenBCI GUI to stream EEG data through Lab Streaming Layer (LSL), and wrote a Python script to subscribe to this stream. The script maintains a rolling 30-second buffer (based on the 250 Hz sampling rate), continuously recomputing the feature vector for each epoch window. This allowed me to replicate the offline pipeline in real time, confirming that the approach is viable for embedded implementation later.
+
+<img width="636" height="166" alt="-0 00021" src="https://github.com/user-attachments/assets/43c4bca1-d8b2-4d8f-a63a-f0a9203f2ae4" />
+
+￼
+
 3/24 - fixing dgnd pin connections
 3/23 - fixing agnd pin connections
 

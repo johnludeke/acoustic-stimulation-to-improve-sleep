@@ -3,10 +3,13 @@
 With access to the raw bitstream, I moved on to parsing the incoming data according to the OpenBCI Cyton data format. Each packet begins with a header byte (0xA0) and ends with a footer byte (0xC followed by a counter), with a fixed number of bytes in between representing channel data and metadata.
 
 To verify correct packet reception, I first implemented a simple parser that prints a new line whenever a valid header is detected and a corresponding footer appears at the expected offset. This resulted in consistently formatted packet outputs, with no unexpected bytes or misalignment. This step was important because it confirmed that there was no data corruption or packet loss at the UART level.
-￼
+<img width="702" height="513" alt="Screenshot 2026-04-07 at 8 01 57 PM" src="https://github.com/user-attachments/assets/bb86e2ad-8833-4226-ba44-28b570faddb6" />
+￼￼
+
 After confirming packet integrity, I implemented parsing of the EEG channel data. Each channel value is represented as a 24-bit signed integer, so I reconstructed the values from three bytes and converted them into signed integers. These values were then streamed and plotted over time.
 
 To validate correctness, I compared the reconstructed EEG waveform from the ESP32 with the waveform displayed in the OpenBCI GUI. The signals matched in both shape and timing, confirming that the parsing process was accurate and that the data pipeline preserved signal integrity.
+<img width="653" height="507" alt="Screenshot 2026-04-07 at 8 05 31 PM" src="https://github.com/user-attachments/assets/dd83220a-3864-430b-ac93-16a8cb91c607" />
 
 ￼
 ⸻

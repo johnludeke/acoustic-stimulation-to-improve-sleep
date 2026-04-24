@@ -1,53 +1,49 @@
-// waveform_stim.ino
-// ESP32-C6-WROOM-1 — Waveform-Triggered Pink Noise Stimulator
-//
-// Hardware:
-//   GPIO 0   <- waveform generator (0–3.3 V, ADC1 ch0 — only GPIO 0–6 are ADC on ESP32-C6)
-//   GPIO 4   -> LM386N-1 amplifier -> AST-03008MR-R speaker
-//
-// Behavior:
-//   - Samples the input waveform at ADC_SAMPLE_RATE_HZ and displays it in
-//     the Arduino Serial Plotter (Voltage_mV, Freq_Hz, Amp_mV traces).
-//   - When the detected frequency is within FREQ_TOLERANCE_HZ of TARGET_FREQ_HZ:
-//       1. Wait for the next peak, then play NOISE_DURATION_MS ms of pink noise.
-//       2. Wait for the following peak, then play another burst.
-//       3. Enter a BREAK_DURATION_MS ms pause, then repeat from step 1.
-
 #include <Arduino.h>
+#include <SPI.h>
+
+// ── Pin mapping for your board ─────────────────────────────────────────────
+
+#define ADC_PIN                34     // MUST be an ADC-capable pin (not J5 RX as currently wired)
+#define DAC_CS_PIN              5     // IO5  -> MCP4822 CS
+#define DAC_SCK_PIN            18     // IO18 -> MCP4822 SCK
+#define DAC_MOSI_PIN           23     // IO23 -> MCP4822 SDI
 
 // ── Configurable constants ─────────────────────────────────────────────────
 
-#define ADC_PIN                0      // GPIO 0 (ADC1 ch0) — waveform input; must be GPIO 0–6 on ESP32-C6
-#define AUDIO_PIN              4      // GPIO 4 — PWM audio output
-#define AUDIO_FREQ_HZ      20000      // PWM carrier (above hearing range)
-#define AUDIO_RESOLUTION       8      // 8-bit resolution (duty 0–255)
-#define AUDIO_SAMPLE_RATE_HZ 4000     // Pink noise sample rate (Hz)
+#define ADC_SAMPLE_RATE_HZ    500
+#define TARGET_FREQ_HZ        1.0f
+#define FREQ_TOLERANCE_HZ     0.4f
+#define NOISE_DURATION_MS     250
+#define BREAK_DURATION_MS    2500
+#define PEAK_HYSTERESIS        80
+#define AMP_WINDOW_MS        3000
+#define PEAK_BUFFER_SIZE        4
+#define AMP_BUFFER_SIZE      1500
 
-#define ADC_SAMPLE_RATE_HZ   500      // ADC sampling rate (Hz)
-#define TARGET_FREQ_HZ       1.0f     // Target waveform frequency to match (Hz)
-#define FREQ_TOLERANCE_HZ    0.4f     // ± tolerance around target (Hz)
-#define NOISE_DURATION_MS    250      // Length of each pink noise burst (ms)
-#define BREAK_DURATION_MS   2500      // Pause duration after two bursts (ms)
-#define PEAK_HYSTERESIS       80      // ADC counts below localMax to confirm peak
-#define AMP_WINDOW_MS       3000      // Rolling window for amplitude tracking (ms)
-#define PEAK_BUFFER_SIZE       4      // Number of peak timestamps to keep
-#define AMP_BUFFER_SIZE     1500      // ADC_SAMPLE_RATE_HZ * AMP_WINDOW_MS / 1000
+#define AUDIO_SAMPLE_RATE_HZ  4000
+#define DAC_MID              2048    // 12-bit midpoint
+#define NOISE_AMPL            600    // adjust for volume
+
+SPIClass *dacSPI = &SPI;
 
 // ── Forward declarations ───────────────────────────────────────────────────
 
 int getAmplitudeRaw();
 void resetPeakDetector();
 void resetFrequencyEstimator();
+void writeDAC_A(uint16_t value12);
+void updateAudio();
+uint8_t pinkNoiseSample();
 
 // ── State machine ──────────────────────────────────────────────────────────
 
 enum State {
-  LISTEN,       // Monitoring frequency, waiting for target
-  WAIT_PEAK1,   // Target freq confirmed; waiting for first peak
-  NOISE1,       // Playing first pink noise burst
-  WAIT_PEAK2,   // Waiting for second peak
-  NOISE2,       // Playing second pink noise burst
-  BREAK         // Resting before next cycle
+  LISTEN,
+  WAIT_PEAK1,
+  NOISE1,
+  WAIT_PEAK2,
+  NOISE2,
+  BREAK
 };
 
 static State currentState = LISTEN;
@@ -74,7 +70,7 @@ float getAmplitude() {
     if (v < lo) lo = v;
     if (v > hi) hi = v;
   }
-  return (hi - lo) * 3300.0f / 4095.0f;  // mV peak-to-peak
+  return (hi - lo) * 3300.0f / 4095.0f;
 }
 
 float getRollingMean() {
@@ -99,7 +95,6 @@ void updateFrequency(uint32_t peakTimeMs) {
 float getFrequency() {
   if (peakFilled < 2) return 0.0f;
 
-  // Average the last two inter-peak intervals
   int n = (peakFilled < PEAK_BUFFER_SIZE) ? peakFilled : PEAK_BUFFER_SIZE;
   int intervals = (n >= 3) ? 2 : 1;
   float totalPeriodMs = 0.0f;
@@ -124,22 +119,22 @@ bool frequencyInRange(float freq) {
 // ── Peak detection ─────────────────────────────────────────────────────────
 
 static bool risingEdge = false;
-static int  localMax   = 0;
+static int localMax = 0;
 
 bool detectPeak(int sample) {
   float mean = getRollingMean();
   float amp  = getAmplitudeRaw();
-  int   threshold = (int)(mean + amp * 0.25f);  // 25% above mean
+  int threshold = (int)(mean + amp * 0.25f);
 
   if (sample > localMax) {
-    localMax    = sample;
-    risingEdge  = true;
+    localMax = sample;
+    risingEdge = true;
     return false;
   }
 
   if (risingEdge && (localMax - sample) >= PEAK_HYSTERESIS && localMax > threshold) {
     risingEdge = false;
-    localMax   = sample;
+    localMax = sample;
     return true;
   }
 
@@ -150,20 +145,16 @@ bool detectPeak(int sample) {
   return false;
 }
 
-// Resets peak detector state — call when entering a new WAIT_PEAK window
 void resetPeakDetector() {
   risingEdge = false;
-  localMax   = 0;
+  localMax = 0;
 }
 
-// Clears the frequency buffer — call when entering LISTEN so stale timestamps
-// from a previous cycle don't make any frequency appear valid immediately.
 void resetFrequencyEstimator() {
-  peakWrite  = 0;
+  peakWrite = 0;
   peakFilled = 0;
 }
 
-// Raw amplitude in ADC counts (used internally by detectPeak threshold)
 int getAmplitudeRaw() {
   if (ampCount == 0) return 0;
   int lo = 4095, hi = 0;
@@ -175,11 +166,13 @@ int getAmplitudeRaw() {
   return hi - lo;
 }
 
-// ── Pink noise (Voss-McCartney) ────────────────────────────────────────────
+// ── Pink noise ─────────────────────────────────────────────────────────────
 
 static int32_t pinkRows[16] = {0};
 static int32_t pinkRunningSum = 0;
 static uint32_t pinkIndex = 0;
+static volatile bool audioActive = false;
+static volatile uint16_t lastNoiseSample = DAC_MID;
 
 uint8_t pinkNoiseSample() {
   uint32_t lastIndex = pinkIndex;
@@ -189,27 +182,28 @@ uint8_t pinkNoiseSample() {
   for (int i = 0; i < 16; i++) {
     if (diff & (1u << i)) {
       pinkRunningSum -= pinkRows[i];
-      // Map esp_random() to signed [-32768, 32767]
       pinkRows[i] = (int32_t)(esp_random() >> 16) - 32768;
       pinkRunningSum += pinkRows[i];
     }
   }
 
-  // White noise contribution
   int32_t white = (int32_t)(esp_random() >> 16) - 32768;
-  int32_t raw   = pinkRunningSum + white;
+  int32_t raw = pinkRunningSum + white;
 
-  // Divisor ~1000 targets ~92% PWM range utilization (intentionally louder than exact)
-  int32_t scaled = (raw / 1000) + 128;
-  if (scaled < 0)   scaled = 0;
-  if (scaled > 255) scaled = 255;
-  return (uint8_t)scaled;
+  int32_t scaled = (raw / 1000);
+  scaled = constrain(scaled, -1023, 1023);
+
+  return (uint8_t)(scaled & 0xFF);
 }
 
-// ── Audio control ──────────────────────────────────────────────────────────
+void writeDAC_A(uint16_t value12) {
+  value12 &= 0x0FFF;
+  uint16_t word = 0x3000 | value12;   // channel A, 1x gain, active
 
-static volatile bool    audioActive      = false;
-static volatile uint8_t lastNoiseSample  = 128;  // 128 = midpoint (silence)
+  digitalWrite(DAC_CS_PIN, LOW);
+  dacSPI->transfer16(word);
+  digitalWrite(DAC_CS_PIN, HIGH);
+}
 
 void startNoise() {
   audioActive = true;
@@ -217,10 +211,10 @@ void startNoise() {
 
 void stopNoise() {
   audioActive = false;
-  ledcWrite(AUDIO_PIN, 0);
+  writeDAC_A(DAC_MID);
+  lastNoiseSample = DAC_MID;
 }
 
-// Called from loop() at AUDIO_SAMPLE_RATE_HZ via micros() polling
 void updateAudio() {
   static uint32_t lastAudioUs = 0;
   static const uint32_t audioIntervalUs = 1000000UL / AUDIO_SAMPLE_RATE_HZ;
@@ -228,19 +222,20 @@ void updateAudio() {
   uint32_t now = micros();
   if ((now - lastAudioUs) >= audioIntervalUs) {
     lastAudioUs = now;
+
     if (audioActive) {
-      lastNoiseSample = pinkNoiseSample();
-      ledcWrite(AUDIO_PIN, lastNoiseSample);
+      uint32_t r = esp_random();
+      int32_t noise = (int32_t)(r & 0xFFFF) - 32768;
+      int32_t sample = DAC_MID + (noise * NOISE_AMPL) / 32768;
+
+      sample = constrain(sample, 0, 4095);
+      writeDAC_A((uint16_t)sample);
+      lastNoiseSample = (uint16_t)sample;
     } else {
-      lastNoiseSample = 128;
+      writeDAC_A(DAC_MID);
+      lastNoiseSample = DAC_MID;
     }
   }
-}
-
-// ── ADC sampling ───────────────────────────────────────────────────────────
-
-int sampleADC() {
-  return analogRead(ADC_PIN);
 }
 
 // ── Serial Plotter output ──────────────────────────────────────────────────
@@ -256,7 +251,7 @@ void printToPlotter(int adcRaw, float freqHz, float ampMv) {
   Serial.print("Amp_mV:");
   Serial.print(ampMv, 1);
   Serial.print('\t');
-  Serial.print("PinkNoise:");
+  Serial.print("DAC:");
   Serial.println(lastNoiseSample);
 }
 
@@ -276,10 +271,9 @@ void updateStateMachine(bool peakDetected, float freq) {
   uint32_t elapsed = now - stateEntryMs;
 
   switch (currentState) {
-
     case LISTEN:
       if (frequencyInRange(freq)) {
-        resetPeakDetector();  // clear stale state before hunting for peak 1
+        resetPeakDetector();
         enterState(WAIT_PEAK1);
       }
       break;
@@ -333,28 +327,23 @@ void updateStateMachine(bool peakDetected, float freq) {
 
 void setup() {
   Serial.begin(115200);
-  delay(500);
+  delay(300);
 
   analogReadResolution(12);
-  // ADC_11db = full 0–3.3 V range. On ESP-IDF 5.x cores this may be
-  // ADC_ATTEN_DB_12 — change if the compiler reports ADC_11db undefined.
   analogSetAttenuation(ADC_11db);
 
-  // Core 3.x API: ledcAttach(pin, freq, resolution) replaces ledcSetup+ledcAttachPin
-  ledcAttach(AUDIO_PIN, AUDIO_FREQ_HZ, AUDIO_RESOLUTION);
-  ledcWrite(AUDIO_PIN, 0);
+  pinMode(DAC_CS_PIN, OUTPUT);
+  digitalWrite(DAC_CS_PIN, HIGH);
 
-  // Warm up the pink noise RNG state
-  for (int i = 0; i < 100; i++) pinkNoiseSample();
+  dacSPI->begin(DAC_SCK_PIN, -1, DAC_MOSI_PIN, DAC_CS_PIN);
+  dacSPI->beginTransaction(SPISettings(8000000, MSBFIRST, SPI_MODE0));
 
-  // NOTE: Do NOT print any text here — Serial Plotter will misparse it as data labels.
+  writeDAC_A(DAC_MID);
 }
 
 void loop() {
-  // 1. Audio — highest priority, polled every ~250 µs
   updateAudio();
 
-  // 2. ADC sample — polled every 2 ms
   static uint32_t lastSampleMs = 0;
   static const uint32_t sampleIntervalMs = 1000UL / ADC_SAMPLE_RATE_HZ;
 
@@ -362,19 +351,15 @@ void loop() {
   if ((now - lastSampleMs) < sampleIntervalMs) return;
   lastSampleMs = now;
 
-  int raw = sampleADC();
+  int raw = analogRead(ADC_PIN);
   updateAmplitudeBuffer(raw);
 
   bool peak = detectPeak(raw);
-  // Only update frequency estimate from peaks seen during LISTEN.
-  // Peaks in WAIT_PEAK states trigger noise bursts but must not corrupt
-  // the frequency buffer (a spurious peak from resetPeakDetector() would
-  // produce a ~500 Hz reading and immediately kick us back to LISTEN).
   if (peak && currentState == LISTEN) {
     updateFrequency(now);
   }
 
-  float freq  = getFrequency();
+  float freq = getFrequency();
   float ampMv = getAmplitude();
 
   printToPlotter(raw, freq, ampMv);

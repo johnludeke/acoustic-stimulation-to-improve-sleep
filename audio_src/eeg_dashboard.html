@@ -3,37 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SWS Monitor</title>
+<title>SlowWave Monitor</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap');
 
   :root {
-    --bg:       #08090c;
-    --surface:  #0f1117;
-    --border:   #1c1f2b;
-    --text:     #b8bdd0;
-    --muted:    #3d4258;
-    --eeg:      #3dffb0;
-    --trough:   #ff5580;
-    --stim:     #ffd166;
-    --green:    #3dffb0;
-    --red:      #ff5580;
+    --bg:        #08090c;
+    --surface:   #0f1117;
+    --border:    #1c1f2b;
+    --text:      #b8bdd0;
+    --muted:     #3d4258;
+    --sig:       #3dffb0;
+    --amp:       #7b8cff;
+    --stim:      #ffd166;
+    --green:     #3dffb0;
+    --red:       #ff5580;
+
+    /* state colours */
+    --c-listen:     #3d4258;
+    --c-wait:       #7b8cff;
+    --c-noise:      #ffd166;
+    --c-break:      #ff5580;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--text);
+                font-family: 'IBM Plex Mono', monospace; font-size: 13px; overflow: hidden; }
 
-  html, body {
-    height: 100%;
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px;
-    overflow: hidden;
-  }
-
+  /* ── Layout ── */
   .shell {
     display: grid;
-    grid-template-rows: 48px 1fr 180px;
+    grid-template-rows: 48px 1fr 52px 160px;
     height: 100vh;
   }
 
@@ -47,179 +47,123 @@
     gap: 16px;
   }
 
-  .wordmark {
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-weight: 700;
-    font-size: 15px;
-    letter-spacing: 0.04em;
-    color: #fff;
-  }
-  .wordmark em { color: var(--eeg); font-style: normal; }
+  .wordmark { font-family:'IBM Plex Sans',sans-serif; font-weight:700; font-size:15px;
+              letter-spacing:.04em; color:#fff; }
+  .wordmark em { color:var(--sig); font-style:normal; }
 
-  .pill {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 3px 10px;
-    border-radius: 20px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    font-size: 11px;
-  }
+  .pill { display:flex; align-items:center; gap:6px; padding:3px 10px;
+          border-radius:20px; background:var(--bg); border:1px solid var(--border); font-size:11px; }
 
-  .dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--muted);
-    flex-shrink: 0;
-    transition: background 0.3s, box-shadow 0.3s;
-  }
-  .dot.live  { background: var(--green); box-shadow: 0 0 7px var(--green); animation: blink 2s ease-in-out infinite; }
-  .dot.error { background: var(--red); }
+  .dot { width:7px; height:7px; border-radius:50%; background:var(--muted);
+         flex-shrink:0; transition:background .3s,box-shadow .3s; }
+  .dot.live  { background:var(--green); box-shadow:0 0 7px var(--green); animation:blink 2s ease-in-out infinite; }
+  .dot.error { background:var(--red); }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
 
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  #status-txt { color:var(--muted); }
+  .spacer { flex:1; }
 
-  #status-txt { color: var(--muted); }
-
-  .spacer { flex: 1; }
-
-  .ip-row { display: flex; align-items: center; gap: 8px; }
-  .ip-row label { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+  .ip-row { display:flex; align-items:center; gap:8px; }
+  .ip-row label { font-size:10px; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; }
 
   input[type=text] {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 12px;
-    padding: 4px 9px;
-    border-radius: 5px;
-    width: 160px;
-    outline: none;
-    transition: border-color 0.2s;
+    background:var(--bg); border:1px solid var(--border); color:var(--text);
+    font-family:'IBM Plex Mono',monospace; font-size:12px; padding:4px 9px;
+    border-radius:5px; width:160px; outline:none; transition:border-color .2s;
   }
-  input[type=text]:focus { border-color: var(--eeg); }
+  input[type=text]:focus { border-color:var(--sig); }
 
   button {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 5px 13px;
-    border-radius: 5px;
-    border: 1px solid;
-    cursor: pointer;
-    transition: opacity 0.15s;
+    font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600;
+    padding:5px 13px; border-radius:5px; border:1px solid; cursor:pointer; transition:opacity .15s;
   }
-  button:hover { opacity: 0.75; }
-
-  #btn-conn {
-    background: var(--eeg);
-    color: #08090c;
-    border-color: var(--eeg);
-  }
+  button:hover { opacity:.75; }
+  #btn-conn { background:var(--sig); color:#08090c; border-color:var(--sig); }
 
   /* ── Plot ── */
-  .plot-wrap {
-    position: relative;
-    background: var(--bg);
-    overflow: hidden;
-  }
+  .plot-wrap { position:relative; background:var(--bg); overflow:hidden; }
+  #cv { display:block; width:100%; height:100%; }
 
-  #cv {
-    display: block;
-    width: 100%;
-    height: 100%;
-  }
+  #y-axis { position:absolute; top:0; left:0; width:46px; height:100%;
+            display:flex; flex-direction:column; justify-content:space-between;
+            padding:8px 0; pointer-events:none; }
+  .ytick { font-size:9px; color:var(--muted); text-align:right; padding-right:5px; }
 
-  #y-axis {
-    position: absolute;
-    top: 0; left: 0;
-    width: 40px; height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 8px 0;
-    pointer-events: none;
-  }
-  .ytick {
-    font-size: 9px;
-    color: var(--muted);
-    text-align: right;
-    padding-right: 5px;
-  }
+  .legend { position:absolute; top:10px; right:14px; display:flex; gap:12px; pointer-events:none; }
+  .leg-item { display:flex; align-items:center; gap:5px; font-size:10px;
+              color:var(--muted); letter-spacing:.05em; }
+  .leg-line { width:16px; height:2px; border-radius:1px; }
+  .leg-line.sig  { background:var(--sig); }
+  .leg-line.stim { background:var(--stim); }
 
-  .legend {
-    position: absolute;
-    top: 10px; right: 14px;
-    display: flex;
-    gap: 12px;
-    pointer-events: none;
-  }
-  .leg-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 0.05em;
-  }
-  .leg-line {
-    width: 16px; height: 2px; border-radius: 1px;
-  }
-  .leg-line.eeg    { background: var(--eeg); }
-  .leg-line.trough { background: var(--trough); }
-  .leg-line.stim   { background: var(--stim); }
-
-  /* ── Event panel ── */
-  .ev-panel {
+  /* ── State bar ── */
+  .state-bar {
     background: var(--surface);
     border-top: 1px solid var(--border);
     display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  .ev-hdr {
-    display: grid;
-    grid-template-columns: 76px 72px 1fr 72px;
-    padding: 6px 16px;
-    font-size: 9px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted);
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-
-  #ev-list {
-    flex: 1;
-    overflow-y: auto;
-  }
-  #ev-list::-webkit-scrollbar { width: 3px; }
-  #ev-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-  .ev-row {
-    display: grid;
-    grid-template-columns: 76px 72px 1fr 72px;
-    padding: 5px 16px;
+    align-items: center;
+    padding: 0 18px;
+    gap: 16px;
     font-size: 11px;
-    border-bottom: 1px solid rgba(28,31,43,0.7);
-    animation: fadeIn 0.15s ease;
   }
+
+  .state-label { color:var(--muted); letter-spacing:.08em; text-transform:uppercase; font-size:10px; }
+
+  /* six state steps */
+  .states { display:flex; gap:6px; }
+  .step {
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 10px;
+    letter-spacing: .04em;
+    transition: all .25s;
+  }
+  .step.active-LISTEN     { border-color:var(--c-listen); color:#fff; background:rgba(61,66,88,.35); }
+  .step.active-WAIT_PEAK1,
+  .step.active-WAIT_PEAK2 { border-color:var(--c-wait);   color:var(--c-wait); background:rgba(123,140,255,.12); }
+  .step.active-NOISE1,
+  .step.active-NOISE2     { border-color:var(--c-noise);  color:var(--c-noise); background:rgba(255,209,102,.12);
+                             animation:noiseGlow .5s ease-in-out infinite alternate; }
+  .step.active-BREAK      { border-color:var(--c-break);  color:var(--c-break); background:rgba(255,85,128,.12); }
+  @keyframes noiseGlow { from{box-shadow:none} to{box-shadow:0 0 8px rgba(255,209,102,.4)} }
+
+  /* stat pills in state bar */
+  .stat { display:flex; flex-direction:column; align-items:flex-end; gap:1px; margin-left:auto; }
+  .stat + .stat { margin-left:16px; }
+  .stat-val { font-size:14px; font-weight:600; color:#fff; line-height:1; }
+  .stat-val.freq { color:var(--c-wait); }
+  .stat-val.amp  { color:var(--sig); }
+  .stat-unit { font-size:9px; color:var(--muted); }
+
+  /* ── Event panel ── */
+  .ev-panel { background:var(--surface); border-top:1px solid var(--border);
+              display:flex; flex-direction:column; overflow:hidden; }
+  .ev-hdr { display:grid; grid-template-columns:70px 72px 1fr 80px;
+            padding:6px 16px; font-size:9px; letter-spacing:.1em; text-transform:uppercase;
+            color:var(--muted); border-bottom:1px solid var(--border); flex-shrink:0; }
+  #ev-list { flex:1; overflow-y:auto; }
+  #ev-list::-webkit-scrollbar { width:3px; }
+  #ev-list::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+  .ev-row { display:grid; grid-template-columns:70px 72px 1fr 80px;
+            padding:5px 16px; font-size:11px; border-bottom:1px solid rgba(28,31,43,.7);
+            animation:fadeIn .15s ease; }
   @keyframes fadeIn { from{opacity:0;transform:translateY(-3px)} to{opacity:1;transform:translateY(0)} }
 
-  .tag { font-weight: 600; letter-spacing: 0.04em; }
-  .tag.TROUGH { color: var(--trough); }
-  .tag.STIM   { color: var(--stim); }
-
-  .ev-t   { color: var(--muted); }
-  .ev-det { color: var(--text); }
-  .ev-amp { color: var(--text); text-align: right; }
+  .tag { font-weight:600; letter-spacing:.04em; }
+  .tag.STIM  { color:var(--stim); }
+  .tag.STATE { color:var(--c-wait); }
+  .ev-t  { color:var(--muted); }
+  .ev-det { color:var(--text); }
+  .ev-r  { text-align:right; color:var(--text); }
 </style>
 </head>
 <body>
 <div class="shell">
 
+  <!-- header -->
   <header>
     <span class="wordmark">slow<em>wave</em></span>
     <div class="pill">
@@ -229,45 +173,162 @@
     <div class="spacer"></div>
     <div class="ip-row">
       <label>ESP32 IP</label>
-      <input id="ip" type="text" placeholder="192.168.1.x">
+      <input id="ip" type="text" value="192.168.4.1" placeholder="192.168.4.1">
       <button id="btn-conn" onclick="toggleConn()">Connect</button>
+      <input type="file" id="edfFile" accept=".edf" />
+      <button onclick="loadEDF()">Load EDF</button>
     </div>
   </header>
 
+  <!-- plot -->
   <div class="plot-wrap">
     <canvas id="cv"></canvas>
     <div id="y-axis"></div>
     <div class="legend">
-      <div class="leg-item"><div class="leg-line eeg"></div>EEG 0.5–4 Hz</div>
-      <div class="leg-item"><div class="leg-line trough"></div>Trough</div>
+      <div class="leg-item"><div class="leg-line sig"></div>Voltage (mV)</div>
       <div class="leg-item"><div class="leg-line stim"></div>Stim</div>
     </div>
   </div>
 
+  <!-- state bar -->
+  <div class="state-bar">
+    <span class="state-label">State</span>
+    <div class="states">
+      <div class="step" id="s-LISTEN">LISTEN</div>
+      <div class="step" id="s-WAIT_PEAK1">WAIT 1</div>
+      <div class="step" id="s-NOISE1">NOISE 1</div>
+      <div class="step" id="s-WAIT_PEAK2">WAIT 2</div>
+      <div class="step" id="s-NOISE2">NOISE 2</div>
+      <div class="step" id="s-BREAK">BREAK</div>
+    </div>
+    <div class="stat">
+      <span class="stat-val freq" id="v-freq">—</span>
+      <span class="stat-unit">Hz</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val amp" id="v-amp">—</span>
+      <span class="stat-unit">mV amp</span>
+    </div>
+  </div>
+
+  <!-- events -->
   <div class="ev-panel">
     <div class="ev-hdr">
-      <span>Type</span><span>Time</span><span>Detail</span><span style="text-align:right">Amp (µV)</span>
+      <span>Type</span><span>Time</span><span>Detail</span><span style="text-align:right">DAC / Hz</span>
     </div>
     <div id="ev-list"></div>
   </div>
 
 </div>
 <script>
-// ── config ─────────────────────────────────────────────────────
-const BUF          = 500;   // 10 s of 50 Hz data
-const MS_PER_SAMP  = 20;    // 1000 ms / 50 Hz
-const MAX_MARKERS  = 120;
-const MAX_LOG      = 150;
-const MARGIN_X     = 42;    // logical px for y-axis
+let edfData = null;
+let edfIndex = 0;
+let edfInterval = null;
 
-// ── state ──────────────────────────────────────────────────────
+async function loadEDF() {
+  const file = document.getElementById('edfFile').files[0];
+  if (!file) {
+    alert("Select an EDF file");
+    return;
+  }
+
+  const buffer = await file.arrayBuffer();
+  edfData = parseEDF(buffer);
+
+  edfIndex = 0;
+  startEDFPlayback();
+
+  setStatus('live', 'EDF playback');
+}
+function parseEDF(buffer) {
+  const view = new DataView(buffer);
+
+  function readStr(offset, len) {
+    return new TextDecoder().decode(
+      new Uint8Array(buffer, offset, len)
+    ).trim();
+  }
+
+  // --- header ---
+  const numSignals = parseInt(readStr(252, 4));
+  const numRecords = parseInt(readStr(236, 8));
+  const duration   = parseFloat(readStr(244, 8));
+
+  const headerBytes = parseInt(readStr(184, 8));
+
+  const samplesPerRecord = [];
+  let offset = 256 + numSignals * 216;
+
+  for (let i = 0; i < numSignals; i++) {
+    samplesPerRecord.push(parseInt(readStr(offset + i * 8, 8)));
+  }
+
+  const totalSamples = numRecords * samplesPerRecord[0];
+
+  // --- data ---
+  const data = [];
+  let ptr = headerBytes;
+
+  for (let r = 0; r < numRecords; r++) {
+    for (let i = 0; i < samplesPerRecord[0]; i++) {
+      const val = view.getInt16(ptr, true);
+      data.push(val);
+      ptr += 2;
+    }
+
+    // skip other channels if present
+    for (let ch = 1; ch < numSignals; ch++) {
+      ptr += samplesPerRecord[ch] * 2;
+    }
+  }
+
+  return {
+    data,
+    sampleRate: samplesPerRecord[0] / duration
+  };
+}
+function startEDFPlayback() {
+  if (!edfData) return;
+
+  clearInterval(edfInterval);
+
+  const stepMs = 1000 / edfData.sampleRate;
+
+  edfInterval = setInterval(() => {
+    if (edfIndex >= edfData.data.length) {
+      clearInterval(edfInterval);
+      return;
+    }
+
+    const raw = edfData.data[edfIndex++];
+
+    // scale to your display range
+    const mv = 1500 + raw * 0.1;
+
+    const t = edfIndex * stepMs;
+
+    pushSample(t, mv);
+
+  }, stepMs);
+}
+let simRunning = false;
+let simTime = 0;
+let simInterval = null;
+// ── config ──────────────────────────────────────────────────────
+const BUF         = 500;    // 10 s at 50 Hz
+const MS_PER_SAMP = 20;
+const MAX_MARKERS = 120;
+const MAX_LOG     = 150;
+const MARGIN_X    = 48;     // px for y-axis
+
+// ── state ───────────────────────────────────────────────────────
 let ws = null, connected = false;
 const sig = new Float32Array(BUF).fill(NaN);
 let head = 0, filled = 0, newestMs = null;
-let yMin = -150, yMax = 150;
-const markers = [];   // { type, sampleMs, ampUV? }
+let yMin = 0, yMax = 3300;
+const markers = [];   // { type:'STIM', ms }
 
-// ── canvas ─────────────────────────────────────────────────────
+// ── canvas ──────────────────────────────────────────────────────
 const cv  = document.getElementById('cv');
 const ctx = cv.getContext('2d');
 let dpr = 1;
@@ -281,10 +342,114 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
+function generateEEGSample(t) {
+  const dt = t / 1000;
+
+  // --- persistent state ---
+  if (!generateEEGSample.s) {
+    generateEEGSample.s = {
+      x: 0, y: 0,
+      drift: 0,
+      slope: 0,
+      lastJump: 0
+    };
+  }
+  const s = generateEEGSample.s;
+
+  // --- random slope changes (piecewise linear behavior) ---
+  if (Math.random() < 0.05) {
+    s.slope = (Math.random() - 0.5) * 200;
+  }
+  s.x += s.slope * 0.02; // integrate slope
+
+  // --- lightly filtered noise (not too smooth) ---
+  const w = (Math.random() - 0.5);
+  s.y = 0.7 * s.y + 0.3 * w;   // much less smoothing than before
+
+  // --- add high-frequency jagged jitter ---
+  const jitter = (Math.random() - 0.5) * 120;
+
+  // --- baseline drift (slow but not too smooth) ---
+  s.drift += (Math.random() - 0.5) * 2;
+  s.drift *= 0.995;
+
+  // --- occasional step artifacts (electrode movement) ---
+  if (Math.random() < 0.003) {
+    s.lastJump = (Math.random() - 0.5) * 800;
+  }
+  s.lastJump *= 0.98;
+
+  // --- nonlinear distortion (creates sharp corners) ---
+  let signal = s.x + s.y * 300 + jitter;
+  signal = Math.tanh(signal / 400) * 800;
+
+  // --- combine ---
+  return 1500 + s.drift * 50 + signal + s.lastJump;
+} 
+
+
+function startSimulation() {
+  if (simRunning) return;
+  simRunning = true;
+
+  let stateCycle = ['LISTEN','WAIT_PEAK1','NOISE1','WAIT_PEAK2','NOISE2','BREAK'];
+  let stateIndex = 0;
+
+  simInterval = setInterval(() => {
+    simTime += MS_PER_SAMP;
+
+    const mv = generateEEGSample(simTime);
+
+    // fake frequency + amplitude estimates
+    const freq = 0.8 + 0.4 * Math.sin(simTime / 5000);
+    const amp  = 800 + 200 * Math.sin(simTime / 3000);
+
+    // feed into your existing pipeline
+    pushSample(simTime, mv);
+    document.getElementById('v-freq').textContent = freq.toFixed(2);
+    document.getElementById('v-amp').textContent  = amp.toFixed(0);
+
+    // simulate state transitions every ~2 seconds
+    if (simTime % 2000 < MS_PER_SAMP) {
+      const state = stateCycle[stateIndex % stateCycle.length];
+      setActiveState(state);
+      logRow('STATE', simTime, '→ ' + state, '—');
+      stateIndex++;
+    }
+
+    // simulate stimulation events
+    if (Math.random() < 0.02) {
+      markers.push({ ms: simTime });
+      if (markers.length > MAX_MARKERS) markers.shift();
+      logRow('STIM', simTime, 'noise burst fired', '—');
+      flashCanvas();
+    }
+
+  }, MS_PER_SAMP);
+
+  setStatus('live', 'simulation');
+}
+
+function stopSimulation() {
+  simRunning = false;
+  clearInterval(simInterval);
+  setStatus('off', 'simulation stopped');
+}
+
+function toggleSim() {
+  if (simRunning) {
+    stopSimulation();
+  } else {
+    closeWS(); // ensure real connection is off
+    startSimulation();
+  }
+}
+
 function rebuildYAxis() {
   const el = document.getElementById('y-axis');
   el.innerHTML = '';
-  [yMax, yMax * 0.5, 0, yMin * 0.5, yMin].forEach(v => {
+  // 5 ticks: max, 75%, mid, 25%, min
+  [yMax, yMax*.75, (yMax+yMin)/2, yMax*.25, yMin].forEach(v => {
     const d = document.createElement('div');
     d.className = 'ytick';
     d.textContent = Math.round(v);
@@ -292,35 +457,35 @@ function rebuildYAxis() {
   });
 }
 
-// ── draw ───────────────────────────────────────────────────────
+// ── draw ────────────────────────────────────────────────────────
 function yPx(v, H) { return ((yMax - v) / (yMax - yMin)) * H; }
 
 function draw() {
   requestAnimationFrame(draw);
-
   const W = cv.width, H = cv.height;
   ctx.clearRect(0, 0, W, H);
-
-  const OX = MARGIN_X * dpr;
-  const PW = W - OX;
+  const OX = MARGIN_X * dpr, PW = W - OX;
 
   // grid
   ctx.strokeStyle = 'rgba(28,31,43,0.9)';
   ctx.lineWidth = 1;
   for (let i = 0; i <= 4; i++) {
-    const y = Math.round((i / 4) * H) + 0.5;
+    const y = Math.round((i / 4) * H) + .5;
     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
   }
 
-  // zero line
+  // midpoint reference
   ctx.strokeStyle = 'rgba(180,185,210,0.07)';
   ctx.setLineDash([4, 5]);
-  ctx.beginPath(); ctx.moveTo(OX, yPx(0, H)); ctx.lineTo(W, yPx(0, H)); ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(OX, yPx((yMax + yMin) / 2, H));
+  ctx.lineTo(W,  yPx((yMax + yMin) / 2, H));
+  ctx.stroke();
   ctx.setLineDash([]);
 
   if (filled < 2) return;
 
-  // auto-scale
+  // auto-scale with padding
   let lo = Infinity, hi = -Infinity;
   for (let i = 0; i < filled; i++) {
     const v = sig[(head - filled + i + BUF) % BUF];
@@ -329,17 +494,17 @@ function draw() {
   if (hi > lo) {
     const span = (hi - lo) * 1.3;
     const mid  = (hi + lo) / 2;
-    yMin = mid - span / 2;
-    yMax = mid + span / 2;
+    yMin = Math.max(0,    mid - span / 2);
+    yMax = Math.min(3300, mid + span / 2);
     rebuildYAxis();
   }
 
-  // EEG trace
+  // signal trace
   const dx = PW / (filled - 1);
   ctx.beginPath();
   ctx.strokeStyle = '#3dffb0';
   ctx.lineWidth   = 1.5 * dpr;
-  ctx.shadowColor = 'rgba(61,255,176,0.22)';
+  ctx.shadowColor = 'rgba(61,255,176,0.2)';
   ctx.shadowBlur  = 5 * dpr;
   let started = false;
   for (let i = 0; i < filled; i++) {
@@ -351,99 +516,110 @@ function draw() {
   ctx.stroke();
   ctx.shadowBlur = 0;
 
-  // markers
-  if (newestMs === null) return;
-  const oldestMs = newestMs - (filled - 1) * MS_PER_SAMP;
-
-  markers.forEach(m => {
-    if (m.sampleMs < oldestMs || m.sampleMs > newestMs) return;
-    const frac = (m.sampleMs - oldestMs) / (newestMs - oldestMs);
-    const px   = OX + frac * PW;
-
-    if (m.type === 'TROUGH') {
-      ctx.strokeStyle = '#ff5580';
-      ctx.lineWidth   = 1.2 * dpr;
-      ctx.setLineDash([3, 4]);
-      ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, H); ctx.stroke();
-      ctx.setLineDash([]);
-      // triangle at waveform amplitude
-      if (m.ampUV !== undefined) {
-        const ty = yPx(m.ampUV, H);
-        ctx.fillStyle = '#ff5580';
-        ctx.beginPath();
-        ctx.moveTo(px,            ty);
-        ctx.lineTo(px - 5 * dpr, ty - 9 * dpr);
-        ctx.lineTo(px + 5 * dpr, ty - 9 * dpr);
-        ctx.closePath();
-        ctx.fill();
-      }
-
-    } else if (m.type === 'STIM') {
-      ctx.strokeStyle = '#ffd166';
-      ctx.lineWidth   = 2 * dpr;
-      ctx.shadowColor = 'rgba(255,209,102,0.45)';
-      ctx.shadowBlur  = 10 * dpr;
-      ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, H); ctx.stroke();
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = '#ffd166';
-      ctx.beginPath(); ctx.arc(px, 10 * dpr, 4.5 * dpr, 0, Math.PI * 2); ctx.fill();
-    }
-  });
+  // // stim markers
+  // if (newestMs === null) return;
+  // const oldestMs = newestMs - (filled - 1) * MS_PER_SAMP;
+  // markers.forEach(m => {
+  //   if (m.ms < oldestMs || m.ms > newestMs) return;
+  //   const frac = (m.ms - oldestMs) / (newestMs - oldestMs);
+  //   const px   = OX + frac * PW;
+  //   ctx.strokeStyle = '#ffd166';
+  //   ctx.lineWidth   = 2 * dpr;
+  //   ctx.shadowColor = 'rgba(255,209,102,.45)';
+  //   ctx.shadowBlur  = 10 * dpr;
+  //   ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, H); ctx.stroke();
+  //   ctx.shadowBlur = 0;
+  //   ctx.fillStyle = '#ffd166';
+  //   ctx.beginPath(); ctx.arc(px, 10 * dpr, 4.5 * dpr, 0, Math.PI * 2); ctx.fill();
+  // });
 }
 
-// ── data ingestion ─────────────────────────────────────────────
-function pushSample(ms, uv) {
+// ── ingestion ───────────────────────────────────────────────────
+function pushSample(ms, mv) {
   newestMs = ms;
-  sig[head] = uv;
+  sig[head] = mv;
   head = (head + 1) % BUF;
   if (filled < BUF) filled++;
 }
 
-function pushMarker(type, ms, ampUV) {
-  markers.push({ type, sampleMs: ms, ampUV });
-  if (markers.length > MAX_MARKERS) markers.shift();
+// ── state display ───────────────────────────────────────────────
+// Map firmware state names to step element IDs
+const STATE_IDS = {
+  'LISTEN':     's-LISTEN',
+  'WAIT_PEAK1': 's-WAIT_PEAK1',
+  'NOISE1':     's-NOISE1',
+  'WAIT_PEAK2': 's-WAIT_PEAK2',
+  'NOISE2':     's-NOISE2',
+  'BREAK':      's-BREAK',
+};
+let activeState = null;
+
+function setActiveState(name) {
+  // clear previous
+  if (activeState) {
+    const el = document.getElementById(STATE_IDS[activeState]);
+    if (el) el.className = 'step';
+  }
+  activeState = name;
+  const el = document.getElementById(STATE_IDS[name]);
+  if (el) el.className = 'step active-' + name;
 }
 
-// ── WebSocket ──────────────────────────────────────────────────
+// ── WebSocket ───────────────────────────────────────────────────
 function toggleConn() { connected ? closeWS() : openWS(); }
 
 function openWS() {
   const ip = document.getElementById('ip').value.trim();
-  if (!ip) { alert('Enter the ESP32 IP address.'); return; }
-  setStatus('connecting', `connecting…`);
+  if (!ip) { alert('Enter the ESP32 IP.'); return; }
+  setStatus('connecting', 'connecting…');
   ws = new WebSocket(`ws://${ip}:81`);
   ws.onopen    = () => { connected = true;  setStatus('live', ip + ':81'); document.getElementById('btn-conn').textContent = 'Disconnect'; };
   ws.onclose   = () => { connected = false; setStatus('off', 'disconnected'); document.getElementById('btn-conn').textContent = 'Connect'; };
   ws.onerror   = () => setStatus('error', 'connection error');
   ws.onmessage = e  => parse(e.data.trim());
 }
-
 function closeWS() { if (ws) ws.close(); }
 
 function parse(line) {
   const p = line.split(',');
-  if (p[0] === 'DATA') {
-    const ms = parseInt(p[1]), uv = parseFloat(p[2]);
-    if (!isNaN(ms) && !isNaN(uv)) pushSample(ms, uv);
+  switch (p[0]) {
 
-  } else if (p[0] === 'TROUGH') {
-    const ms  = parseInt(p[1]);
-    const amp = parseFloat(p[2]);
-    const ppt = parseInt(p[3]);
-    pushMarker('TROUGH', ms, amp);
-    logRow('TROUGH', ms, `peak @ ${ppt} ms`, amp.toFixed(1));
+    case 'DATA': {
+      // DATA,t_ms,voltage_mV,freq_hz,amp_mV,dac
+      const ms  = parseInt(p[1]);
+      const mv  = parseFloat(p[2]);
+      const hz  = parseFloat(p[3]);
+      const amp = parseFloat(p[4]);
+      if (!isNaN(ms) && !isNaN(mv)) pushSample(ms, mv);
+      if (!isNaN(hz))  document.getElementById('v-freq').textContent = hz.toFixed(2);
+      if (!isNaN(amp)) document.getElementById('v-amp').textContent  = amp.toFixed(0);
+      break;
+    }
 
-  } else if (p[0] === 'STIM') {
-    const ms = parseInt(p[1]);
-    pushMarker('STIM', ms, undefined);
-    logRow('STIM', ms, 'noise burst fired', '—');
-    flashCanvas();
+    case 'STATE': {
+      // STATE,t_ms,state_name
+      const ms   = parseInt(p[1]);
+      const name = p[2];
+      setActiveState(name);
+      logRow('STATE', ms, '→ ' + name, '—');
+      break;
+    }
+
+    case 'STIM': {
+      // STIM,t_ms
+      const ms = parseInt(p[1]);
+      markers.push({ ms });
+      if (markers.length > MAX_MARKERS) markers.shift();
+      logRow('STIM', ms, 'noise burst fired', '—');
+      flashCanvas();
+      break;
+    }
   }
 }
 
-// ── event log ─────────────────────────────────────────────────
+// ── event log ───────────────────────────────────────────────────
 let logCount = 0;
-function logRow(type, ms, detail, amp) {
+function logRow(type, ms, detail, right) {
   const list = document.getElementById('ev-list');
   const row  = document.createElement('div');
   row.className = 'ev-row';
@@ -451,7 +627,7 @@ function logRow(type, ms, detail, amp) {
     `<span class="tag ${type}">${type}</span>` +
     `<span class="ev-t">${(ms / 1000).toFixed(2)} s</span>` +
     `<span class="ev-det">${detail}</span>` +
-    `<span class="ev-amp">${amp}</span>`;
+    `<span class="ev-r">${right}</span>`;
   list.prepend(row);
   if (++logCount > MAX_LOG) {
     const kids = list.children;
@@ -459,7 +635,7 @@ function logRow(type, ms, detail, amp) {
   }
 }
 
-// ── helpers ────────────────────────────────────────────────────
+// ── helpers ─────────────────────────────────────────────────────
 function setStatus(state, txt) {
   document.getElementById('dot').className =
     'dot' + (state === 'live' ? ' live' : state === 'error' ? ' error' : '');
@@ -467,11 +643,12 @@ function setStatus(state, txt) {
 }
 
 function flashCanvas() {
-  cv.style.transition = 'box-shadow 0.06s';
-  cv.style.boxShadow  = '0 0 40px rgba(255,209,102,0.35)';
+  cv.style.transition = 'box-shadow .06s';
+  cv.style.boxShadow  = '0 0 40px rgba(255,209,102,.35)';
   setTimeout(() => { cv.style.boxShadow = ''; }, 350);
 }
 
+// ── start ───────────────────────────────────────────────────────
 requestAnimationFrame(draw);
 </script>
 </body>

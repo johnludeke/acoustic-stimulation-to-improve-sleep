@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SWS Monitor</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap');
+
+  :root {
+    --bg:       #08090c;
+    --surface:  #0f1117;
+    --border:   #1c1f2b;
+    --text:     #b8bdd0;
+    --muted:    #3d4258;
+    --eeg:      #3dffb0;
+    --trough:   #ff5580;
+    --stim:     #ffd166;
+    --green:    #3dffb0;
+    --red:      #ff5580;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    overflow: hidden;
+  }
+
+  .shell {
+    display: grid;
+    grid-template-rows: 48px 1fr 180px;
+    height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+    gap: 16px;
+  }
+
+  .wordmark {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+    color: #fff;
+  }
+  .wordmark em { color: var(--eeg); font-style: normal; }
+
+  .pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    font-size: 11px;
+  }
+
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .dot.live  { background: var(--green); box-shadow: 0 0 7px var(--green); animation: blink 2s ease-in-out infinite; }
+  .dot.error { background: var(--red); }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  #status-txt { color: var(--muted); }
+
+  .spacer { flex: 1; }
+
+  .ip-row { display: flex; align-items: center; gap: 8px; }
+  .ip-row label { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; }
+
+  input[type=text] {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 4px 9px;
+    border-radius: 5px;
+    width: 160px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input[type=text]:focus { border-color: var(--eeg); }
+
+  button {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 13px;
+    border-radius: 5px;
+    border: 1px solid;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  button:hover { opacity: 0.75; }
+
+  #btn-conn {
+    background: var(--eeg);
+    color: #08090c;
+    border-color: var(--eeg);
+  }
+
+  /* ── Plot ── */
+  .plot-wrap {
+    position: relative;
+    background: var(--bg);
+    overflow: hidden;
+  }
+
+  #cv {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  #y-axis {
+    position: absolute;
+    top: 0; left: 0;
+    width: 40px; height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 8px 0;
+    pointer-events: none;
+  }
+  .ytick {
+    font-size: 9px;
+    color: var(--muted);
+    text-align: right;
+    padding-right: 5px;
+  }
+
+  .legend {
+    position: absolute;
+    top: 10px; right: 14px;
+    display: flex;
+    gap: 12px;
+    pointer-events: none;
+  }
+  .leg-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+  .leg-line {
+    width: 16px; height: 2px; border-radius: 1px;
+  }
+  .leg-line.eeg    { background: var(--eeg); }
+  .leg-line.trough { background: var(--trough); }
+  .leg-line.stim   { background: var(--stim); }
+
+  /* ── Event panel ── */
+  .ev-panel {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .ev-hdr {
+    display: grid;
+    grid-template-columns: 76px 72px 1fr 72px;
+    padding: 6px 16px;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  #ev-list {
+    flex: 1;
+    overflow-y: auto;
+  }
+  #ev-list::-webkit-scrollbar { width: 3px; }
+  #ev-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .ev-row {
+    display: grid;
+    grid-template-columns: 76px 72px 1fr 72px;
+    padding: 5px 16px;
+    font-size: 11px;
+    border-bottom: 1px solid rgba(28,31,43,0.7);
+    animation: fadeIn 0.15s ease;
+  }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(-3px)} to{opacity:1;transform:translateY(0)} }
+
+  .tag { font-weight: 600; letter-spacing: 0.04em; }
+  .tag.TROUGH { color: var(--trough); }
+  .tag.STIM   { color: var(--stim); }
+
+  .ev-t   { color: var(--muted); }
+  .ev-det { color: var(--text); }
+  .ev-amp { color: var(--text); text-align: right; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header>
+    <span class="wordmark">slow<em>wave</em></span>
+    <div class="pill">
+      <div class="dot" id="dot"></div>
+      <span id="status-txt">disconnected</span>
+    </div>
+    <div class="spacer"></div>
+    <div class="ip-row">
+      <label>ESP32 IP</label>
+      <input id="ip" type="text" placeholder="192.168.1.x">
+      <button id="btn-conn" onclick="toggleConn()">Connect</button>
+    </div>
+  </header>
+
+  <div class="plot-wrap">
+    <canvas id="cv"></canvas>
+    <div id="y-axis"></div>
+    <div class="legend">
+      <div class="leg-item"><div class="leg-line eeg"></div>EEG 0.5–4 Hz</div>
+      <div class="leg-item"><div class="leg-line trough"></div>Trough</div>
+      <div class="leg-item"><div class="leg-line stim"></div>Stim</div>
+    </div>
+  </div>
+
+  <div class="ev-panel">
+    <div class="ev-hdr">
+      <span>Type</span><span>Time</span><span>Detail</span><span style="text-align:right">Amp (µV)</span>
+    </div>
+    <div id="ev-list"></div>
+  </div>
+
+</div>
+<script>
+// ── config ─────────────────────────────────────────────────────
+const BUF          = 500;   // 10 s of 50 Hz data
+const MS_PER_SAMP  = 20;    // 1000 ms / 50 Hz
+const MAX_MARKERS  = 120;
+const MAX_LOG      = 150;
+const MARGIN_X     = 42;    // logical px for y-axis
+
+// ── state ──────────────────────────────────────────────────────
+let ws = null, connected = false;
+const sig = new Float32Array(BUF).fill(NaN);
+let head = 0, filled = 0, newestMs = null;
+let yMin = -150, yMax = 150;
+const markers = [];   // { type, sampleMs, ampUV? }
+
+// ── canvas ─────────────────────────────────────────────────────
+const cv  = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let dpr = 1;
+
+function resize() {
+  dpr = window.devicePixelRatio || 1;
+  cv.width  = cv.offsetWidth  * dpr;
+  cv.height = cv.offsetHeight * dpr;
+  rebuildYAxis();
+}
+window.addEventListener('resize', resize);
+resize();
+
+function rebuildYAxis() {
+  const el = document.getElementById('y-axis');
+  el.innerHTML = '';
+  [yMax, yMax * 0.5, 0, yMin * 0.5, yMin].forEach(v => {
+    const d = document.createElement('div');
+    d.className = 'ytick';
+    d.textContent = Math.round(v);
+    el.appendChild(d);
+  });
+}
+
+// ── draw ───────────────────────────────────────────────────────
+function yPx(v, H) { return ((yMax - v) / (yMax - yMin)) * H; }
+
+function draw() {
+  requestAnimationFrame(draw);
+
+  const W = cv.width, H = cv.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const OX = MARGIN_X * dpr;
+  const PW = W - OX;
+
+  // grid
+  ctx.strokeStyle = 'rgba(28,31,43,0.9)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = Math.round((i / 4) * H) + 0.5;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  // zero line
+  ctx.strokeStyle = 'rgba(180,185,210,0.07)';
+  ctx.setLineDash([4, 5]);
+  ctx.beginPath(); ctx.moveTo(OX, yPx(0, H)); ctx.lineTo(W, yPx(0, H)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  if (filled < 2) return;
+
+  // auto-scale
+  let lo = Infinity, hi = -Infinity;
+  for (let i = 0; i < filled; i++) {
+    const v = sig[(head - filled + i + BUF) % BUF];
+    if (!isNaN(v)) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
+  }
+  if (hi > lo) {
+    const span = (hi - lo) * 1.3;
+    const mid  = (hi + lo) / 2;
+    yMin = mid - span / 2;
+    yMax = mid + span / 2;
+    rebuildYAxis();
+  }
+
+  // EEG trace
+  const dx = PW / (filled - 1);
+  ctx.beginPath();
+  ctx.strokeStyle = '#3dffb0';
+  ctx.lineWidth   = 1.5 * dpr;
+  ctx.shadowColor = 'rgba(61,255,176,0.22)';
+  ctx.shadowBlur  = 5 * dpr;
+  let started = false;
+  for (let i = 0; i < filled; i++) {
+    const v = sig[(head - filled + i + BUF) % BUF];
+    if (isNaN(v)) continue;
+    const px = OX + i * dx, py = yPx(v, H);
+    started ? ctx.lineTo(px, py) : (ctx.moveTo(px, py), started = true);
+  }
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // markers
+  if (newestMs === null) return;
+  const oldestMs = newestMs - (filled - 1) * MS_PER_SAMP;
+
+  markers.forEach(m => {
+    if (m.sampleMs < oldestMs || m.sampleMs > newestMs) return;
+    const frac = (m.sampleMs - oldestMs) / (newestMs - oldestMs);
+    const px   = OX + frac * PW;
+
+    if (m.type === 'TROUGH') {
+      ctx.strokeStyle = '#ff5580';
+      ctx.lineWidth   = 1.2 * dpr;
+      ctx.setLineDash([3, 4]);
+      ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, H); ctx.stroke();
+      ctx.setLineDash([]);
+      // triangle at waveform amplitude
+      if (m.ampUV !== undefined) {
+        const ty = yPx(m.ampUV, H);
+        ctx.fillStyle = '#ff5580';
+        ctx.beginPath();
+        ctx.moveTo(px,            ty);
+        ctx.lineTo(px - 5 * dpr, ty - 9 * dpr);
+        ctx.lineTo(px + 5 * dpr, ty - 9 * dpr);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+    } else if (m.type === 'STIM') {
+      ctx.strokeStyle = '#ffd166';
+      ctx.lineWidth   = 2 * dpr;
+      ctx.shadowColor = 'rgba(255,209,102,0.45)';
+      ctx.shadowBlur  = 10 * dpr;
+      ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, H); ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#ffd166';
+      ctx.beginPath(); ctx.arc(px, 10 * dpr, 4.5 * dpr, 0, Math.PI * 2); ctx.fill();
+    }
+  });
+}
+
+// ── data ingestion ─────────────────────────────────────────────
+function pushSample(ms, uv) {
+  newestMs = ms;
+  sig[head] = uv;
+  head = (head + 1) % BUF;
+  if (filled < BUF) filled++;
+}
+
+function pushMarker(type, ms, ampUV) {
+  markers.push({ type, sampleMs: ms, ampUV });
+  if (markers.length > MAX_MARKERS) markers.shift();
+}
+
+// ── WebSocket ──────────────────────────────────────────────────
+function toggleConn() { connected ? closeWS() : openWS(); }
+
+function openWS() {
+  const ip = document.getElementById('ip').value.trim();
+  if (!ip) { alert('Enter the ESP32 IP address.'); return; }
+  setStatus('connecting', `connecting…`);
+  ws = new WebSocket(`ws://${ip}:81`);
+  ws.onopen    = () => { connected = true;  setStatus('live', ip + ':81'); document.getElementById('btn-conn').textContent = 'Disconnect'; };
+  ws.onclose   = () => { connected = false; setStatus('off', 'disconnected'); document.getElementById('btn-conn').textContent = 'Connect'; };
+  ws.onerror   = () => setStatus('error', 'connection error');
+  ws.onmessage = e  => parse(e.data.trim());
+}
+
+function closeWS() { if (ws) ws.close(); }
+
+function parse(line) {
+  const p = line.split(',');
+  if (p[0] === 'DATA') {
+    const ms = parseInt(p[1]), uv = parseFloat(p[2]);
+    if (!isNaN(ms) && !isNaN(uv)) pushSample(ms, uv);
+
+  } else if (p[0] === 'TROUGH') {
+    const ms  = parseInt(p[1]);
+    const amp = parseFloat(p[2]);
+    const ppt = parseInt(p[3]);
+    pushMarker('TROUGH', ms, amp);
+    logRow('TROUGH', ms, `peak @ ${ppt} ms`, amp.toFixed(1));
+
+  } else if (p[0] === 'STIM') {
+    const ms = parseInt(p[1]);
+    pushMarker('STIM', ms, undefined);
+    logRow('STIM', ms, 'noise burst fired', '—');
+    flashCanvas();
+  }
+}
+
+// ── event log ─────────────────────────────────────────────────
+let logCount = 0;
+function logRow(type, ms, detail, amp) {
+  const list = document.getElementById('ev-list');
+  const row  = document.createElement('div');
+  row.className = 'ev-row';
+  row.innerHTML =
+    `<span class="tag ${type}">${type}</span>` +
+    `<span class="ev-t">${(ms / 1000).toFixed(2)} s</span>` +
+    `<span class="ev-det">${detail}</span>` +
+    `<span class="ev-amp">${amp}</span>`;
+  list.prepend(row);
+  if (++logCount > MAX_LOG) {
+    const kids = list.children;
+    if (kids.length > MAX_LOG) list.removeChild(kids[kids.length - 1]);
+  }
+}
+
+// ── helpers ────────────────────────────────────────────────────
+function setStatus(state, txt) {
+  document.getElementById('dot').className =
+    'dot' + (state === 'live' ? ' live' : state === 'error' ? ' error' : '');
+  document.getElementById('status-txt').textContent = txt;
+}
+
+function flashCanvas() {
+  cv.style.transition = 'box-shadow 0.06s';
+  cv.style.boxShadow  = '0 0 40px rgba(255,209,102,0.35)';
+  setTimeout(() => { cv.style.boxShadow = ''; }, 350);
+}
+
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>

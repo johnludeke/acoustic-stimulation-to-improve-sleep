@@ -12,7 +12,6 @@ To validate correctness, I compared the reconstructed EEG waveform from the ESP3
 <img width="653" height="507" alt="Screenshot 2026-04-07 at 8 05 31 PM" src="https://github.com/user-attachments/assets/dd83220a-3864-430b-ac93-16a8cb91c607" />
 
 ￼
-⸻
 
 Design Direction Pivot
 
@@ -24,11 +23,6 @@ Under this approach, the Cyton board would handle EEG acquisition and digitizati
 
 The next step will be to port the feature extraction logic from Python to the ESP32 and implement a rolling buffer for real-time processing, enabling end-to-end closed-loop operation.
 
-⸻
-
-If you want, I can now:
-	•	do the next week in the same style, or
-	•	tighten this further to match exactly what your TA likes (some classes are picky about tone)
 
 4/4 — Hardware Integration (Cyton → ESP32)
 

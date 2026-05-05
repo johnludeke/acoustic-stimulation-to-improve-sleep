@@ -8,11 +8,11 @@ print("First 20 annotation descriptions:")
 print(list(annot.description[:20]))
 print("First 20 annotation durations:")
 print(list(annot.duration[:20]))
-
+'''
 The output showed labels like Wake, Stage 1, Stage 2, Stage 3, Stage 4, and REM, with durations such as 630 s, 270 s, 90 s, etc. This confirmed that one annotation label can span multiple adjacent 30-second epochs.
 
 I then expanded each annotation duration into 30-second epoch counts:
-
+```python
 from collections import Counter
 import numpy as np
 epoch_counts = Counter()
@@ -27,13 +27,13 @@ labeled_epochs_30s = sum(epoch_counts.values())
 print("PSG full 30s epochs:", psg_epochs_30s)
 print("Labeled 30s epochs:", labeled_epochs_30s)
 print("Difference:", labeled_epochs_30s - psg_epochs_30s)
-
+```
 This showed that the labeled annotations covered fewer epochs than the raw PSG file:
-
+```markdown
 PSG full 30s epochs: 1025
 Labeled 30s epochs: 944
 Difference: -81
-
+```
 This was important because it means I should not blindly cut the full EEG recording into 30-second windows. Only annotation-backed epochs should be used for supervised training.
 
 

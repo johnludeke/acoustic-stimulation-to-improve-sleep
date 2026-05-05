@@ -201,15 +201,23 @@ For each 30-second buffer, the code divides the signal into 1-second intervals, 
 This real-time version helped verify that the feature extraction algorithm is computationally simple enough to run repeatedly and that the output can update live from the OpenBCI stream. The next step is to connect this feature vector to the trained SWS classifier so that each rolling 30-second window can be classified as SWS or non-SWS in real time.
 
 1. Helper functions for zero-crossings
+   
 def zero_mean_interval(sig_1s):
+
     return sig_1s - np.mean(sig_1s)
 
 def get_zero_crossing_indices(sig):
+
     signs = np.sign(sig).copy()
+	
     for i in range(len(signs)):
+	
         if signs[i] == 0:
+		
             signs[i] = 1 if i == 0 else signs[i - 1]
+			
     return np.where(np.diff(signs) != 0)[0]
+	
 This part prepares the signal for zero-crossing analysis. zero_mean_interval() subtracts the mean from each 1-second segment so the signal is centered around zero. Then get_zero_crossing_indices() finds where the signal changes sign. The small loop handles exact zeros so they do not get counted as extra crossings.
 
 2. Computing the x features from a 30-second epoch

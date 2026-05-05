@@ -1,5 +1,108 @@
+**4/26 - Full system integration + requirement verification prep**
 
+**Objective:** Integrate SWS prediction with phase-aligned stimulation on embedded system and validate key system requirements ahead of demo.
 
+At this point, the x feature extraction + SWS prediction code was fully self-contained and only depended on the RX/GND pins for receiving EEG data from the Cyton board. Since it did not interface with any other modules directly, I was able to combine it with John’s updated trough detection and peak prediction code that was already adapted for the actual PCB (instead of the breadboard version). This gave us a complete working closed-loop system.
+The system now runs two parallel processing threads on the same rolling 30-second buffer (updated every second):
+* Thread 1: SWS prediction (Alg. 1)
+    * Downsample raw 250 Hz data to 100 Hz
+    * Apply bandpass filtering (0.3–35 Hz) to match training conditions
+    * Compute x feature vector from zero-crossing segments
+    * Run MLP to compute pSWS and classify SWS vs NSWS
+* Thread 2: Phase-aligned stimulation (Alg. 2)
+    * Use same 30-second window, but bandpass to 0.5–4 Hz
+    * Run autocorrelation to estimate dominant slow-wave frequency (best lag)
+    * Detect troughs in real time using threshold + distance constraints
+    * Predict peaks at T/2 after each trough
+    * Trigger audio stimulation at predicted peaks
+For demo purposes, we removed the “if SWS” gating condition, meaning the stimulation pipeline runs regardless of classification. This allows us to clearly demonstrate that trough detection, peak prediction, and audio triggering are working in real time without depending on whether the user is actually in SWS.
+After integration, I shifted focus to requirement verification, specifically metrics that are difficult to demonstrate live during the demo.
+For artifact suppression, I used a separate script (noise_tracking.ipynb) to analyze a ~40-minute EEG recording collected from OpenBCI. The script checks for ADC saturation, which occurs when the signal exceeds the measurable range (+ or -187500 µV), and computes the fraction of time the signal is saturated:
+```cpp
+sat_flag = eeg_ch1.abs() >= SAT_UV
+artifact_flag = sat_flag | lead_off_flag
+artifact_fraction = artifact_flag.mean()
+```
+Results:
+* Duration: 39.31 minutes
+* Artifact fraction: **7.06%**
+This satisfies the requirement of <10% artifact-contaminated data.
+I also verified timing requirements by checking timestamps in the serial output. Audio stimulation events consistently occurred within 300 ms of slow-wave detection, which we defined operationally as the moment a trough is detected. This confirms that the system meets latency constraints for phase-aligned stimulation.
+In parallel, I reviewed packet parsing and bitstream handling to ensure data integrity from the Cyton board, confirming that packets are being correctly parsed and converted into usable EEG signals.
+Overall, this session was focused on tying everything together: integrating both algorithms into a single embedded pipeline, verifying that key system requirements are met, and preparing for the final demo with John and Bakry.
+
+**4/25 - Real-time SWS prediction on ESP32 using x features**
+
+**Objective:** Extend real-time x feature extraction pipeline to include on-device SWS prediction using trained MLP model, and ensure embedded preprocessing matches training conditions.
+
+While John worked on adapting the trough detection and peak-based audio stimulation code from the breadboard to the PCB, I focused on extending the embedded pipeline from the computed x feature vector so that each one is immediately passed through our trained MLP model for SWS prediction. This was all still running on the ESP32-C6 dev kit using Cyton/dongle data.
+
+The first major step was integrating the model itself into the embedded environment. Since we trained the MLP in Python and saved it as a joblib file, I manually extracted the parameters (weights, biases, scaler mean/variance) and defined them directly in the Arduino code:
+```cpp
+float scalerMean[N_IN] = {...};
+float scalerScale[N_IN] = {...};
+float W1[N_IN][N_HIDDEN] = {...};
+float b1[N_HIDDEN] = {...};
+float W2[N_HIDDEN] = {...};
+float b2 = ...;
+```
+This effectively recreates the trained model architecture on-device. The prediction function then follows a standard forward pass:
+```cpp
+float predictSWSProbability(float x1, float x2, float x3) {
+  float x[N_IN] = {x1, x2, x3};
+  float xs[N_IN];
+
+  for (int i = 0; i < N_IN; i++) {
+    xs[i] = (x[i] - scalerMean[i]) / scalerScale[i];
+  }
+
+  float h[N_HIDDEN];
+
+  for (int j = 0; j < N_HIDDEN; j++) {
+    float sum = b1[j];
+
+    for (int i = 0; i < N_IN; i++) {
+      sum += xs[i] * W1[i][j];
+    }
+
+    h[j] = relu(sum);
+  }
+
+  float logit = b2;
+
+  for (int j = 0; j < N_HIDDEN; j++) {
+    logit += h[j] * W2[j];
+  }
+
+  return sigmoid(logit);
+}
+```
+Here, each feature is first normalized using the same scaler from training, then passed through a single hidden layer with ReLU activation, and finally through a sigmoid to produce pSWS, which represents the probability that the current 30-second window corresponds to slow-wave sleep. The final classification is just a threshold:
+bool isSWS = pSWS >= 0.5f;
+A key part of this work was making sure the embedded signal pipeline matched training conditions as closely as possible. Our live Cyton data comes in at 250 Hz, while the Sleep-EDF dataset used for training is at 100 Hz. To address this, I implemented a simple downsampling scheduler:
+```cpp
+if (!shouldKeepModelSample()) {
+  return;
+}
+```
+This reduces the effective sampling rate to 100 Hz before pushing data into the ring buffer. In addition, I implemented the same bandpass filtering used during training (0.3–35 Hz) using a lightweight causal filter:
+float filteredForMLP = preprocessForMLP(rawVolts) * MODEL_SIGNAL_GAIN;
+Together, these steps ensure that the signal feeding into feature extraction has similar characteristics to what the model saw during training.
+After preprocessing and buffering, the system computes the x feature vector exactly as before:
+```cpp
+computeXFeatures(epoch, MODEL_SFREQ, x1, x2, x3, valid);
+```
+and then immediately runs inference:
+```cpp
+float pSWS = predictSWSProbability(x1, x2, x3);
+```
+One issue I ran into was that although the model was correctly predicting NSWS (expected since I was awake), the probability output pSWS was always exactly 0. This indicated something was off in the feature scaling rather than classification itself.
+Looking into the feature values, I noticed that the third feature (x3) was much larger than expected. The issue was that I was effectively feeding it in units of volts, while the model had been trained on microvolt-scale data. Since x3 involves an accumulated area term, this mismatch caused it to dominate the input and push the model output to extreme values.
+After correcting this scaling (bringing x3 into the same magnitude range as training), the model began outputting more reasonable probabilities, still predicting NSWS but now with non-zero pSWS values. This confirmed that both the feature extraction and model inference pipelines were working correctly and consistently with the offline implementation.
+Overall, this was the first fully integrated version of real-time EEG processing on the ESP32 that goes from raw Cyton packets all the way to SWS probability output, which is a key milestone for the closed-loop system.
+￼
+<img width="374" height="343" alt="Screenshot 2026-05-04 at 9 50 45 PM" src="https://github.com/user-attachments/assets/fff4117b-9739-49b2-becd-1527e3cf0440" />
+Figure 19. Non-Zero SWS Probability from NSWS-Classified Epochs
 
 **4/24 - Improving real-time visualization and smoother plot updates**
 

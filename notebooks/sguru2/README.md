@@ -1,21 +1,24 @@
-4/5 — Packet Parsing + Signal Validation
+**4/5 - Packet Parsing + Signal Validation**
+
+**Objective:** Parse Cyton data packets on the ESP32, reconstruct EEG signals, and validate signal integrity against the OpenBCI GUI to confirm a correct embedded data pipeline.
 
 With access to the raw bitstream, I moved on to parsing the incoming data according to the OpenBCI Cyton data format. Each packet begins with a header byte (0xA0) and ends with a footer byte (0xC followed by a counter), with a fixed number of bytes in between representing channel data and metadata.
 
 To verify correct packet reception, I first implemented a simple parser that prints a new line whenever a valid header is detected and a corresponding footer appears at the expected offset. This resulted in consistently formatted packet outputs, with no unexpected bytes or misalignment. This step was important because it confirmed that there was no data corruption or packet loss at the UART level.
-<img width="702" height="513" alt="Screenshot 2026-04-07 at 8 01 57 PM" src="https://github.com/user-attachments/assets/bb86e2ad-8833-4226-ba44-28b570faddb6" />
-￼￼
 
+<img width="460" height="115" alt="Screenshot 2026-05-04 at 8 33 10 PM" src="https://github.com/user-attachments/assets/23d5682c-920a-4ec6-9afd-846d4517d4b6" />
+Figure 13. Serial Monitor Confirming Proper Header & Footer Bits per Cyton Data Format, and Values per Channel per Sample (packet)
+￼
 After confirming packet integrity, I implemented parsing of the EEG channel data. Each channel value is represented as a 24-bit signed integer, so I reconstructed the values from three bytes and converted them into signed integers. These values were then streamed and plotted over time.
 
 To validate correctness, I compared the reconstructed EEG waveform from the ESP32 with the waveform displayed in the OpenBCI GUI. The signals matched in both shape and timing, confirming that the parsing process was accurate and that the data pipeline preserved signal integrity.
-<img width="653" height="507" alt="Screenshot 2026-04-07 at 8 05 31 PM" src="https://github.com/user-attachments/assets/dd83220a-3864-430b-ac93-16a8cb91c607" />
 
-￼
+￼<img width="619" height="408" alt="Screenshot 2026-05-04 at 8 34 55 PM" src="https://github.com/user-attachments/assets/f5f466be-b804-4800-afe6-87cc888c1959" />
+Figure 14. Serial Plotter Alongside OpenBCI GUI During Ongoing Data Stream
 
 Design Direction Pivot
 
-At this point, I began reconsidering the system architecture for the final demo. While the original plan was to use our custom PCB (ADS1299 + PIC32) for EEG acquisition and processing, there are practical concerns around bring-up time, particularly with soldering fine-pitch components and debugging low-level firmware.
+At this point, I began reconsidering the system architecture for the final demo. While the original plan was to use our custom PCB (ADS1299 + PIC32) for EEG acquisition and processing, there are practical concerns around bring-up time, particularly with soldering smaller components and debugging low-level firmware.
 
 Given that the OpenBCI Cyton board already implements a nearly identical signal acquisition pipeline to our design  , it may be more efficient to use it directly for the demo. This would allow us to focus on the core contribution of the project—real-time SWS detection and closed-loop audio stimulation—without being blocked by hardware integration issues.
 
@@ -24,7 +27,11 @@ Under this approach, the Cyton board would handle EEG acquisition and digitizati
 The next step will be to port the feature extraction logic from Python to the ESP32 and implement a rolling buffer for real-time processing, enabling end-to-end closed-loop operation.
 
 
-4/4 — Hardware Integration (Cyton → ESP32)
+
+
+**4/4 - Hardware Integration (Cyton, ESP32)**
+
+**Objective:** Establish a reliable hardware interface between the OpenBCI Cyton and ESP32 by correctly tapping into the EEG data stream without disrupting system communication.
 
 After validating the algorithm in Python, I shifted focus toward implementing a fully embedded pipeline. The goal was to move away from a PC-based system and instead stream EEG data directly into the ESP32, where feature extraction and SWS detection could eventually run in real time.
 
@@ -34,33 +41,98 @@ Initially, I attempted to connect the TX pin of the Cyton dongle to the RX pin o
 
 After investigating the Cyton architecture, I realized that the dongle’s TX pin is not used for streaming EEG data outward. Instead, the EEG data is transmitted wirelessly from the headset to the dongle, where it is received on the RX pin and then forwarded via USB to the computer. By tapping into the TX line, I was effectively probing the wrong side of the communication chain and potentially loading the signal in a way that disrupted the system.
 
-I then switched to connecting the RX pin of the dongle to the ESP32. In this configuration, the ESP32 passively observes the incoming data stream without interfering with the communication between the headset and the GUI. This resolved the issue: the GUI continued to function normally, and I was able to observe a continuous stream of hex data on the ESP32 serial monitor. Disconnecting the wire caused the stream to stop immediately, confirming that the data being observed was indeed the live EEG bitstream.
+I then switched to connecting the RX pin of the dongle to the ESP32. In this configuration, the ESP32 intercepts the incoming data stream without interfering with the communication between the headset and the GUI. This resolved the issue: the GUI continued to function normally, and I was able to observe a continuous stream of hex data on the ESP32 serial monitor. Disconnecting the wire caused the stream to stop immediately, confirming that the data being observed was indeed the live EEG bitstream.
 
-<img width="615" height="324" alt="OBCI  DONGLE" src="https://github.com/user-attachments/assets/8b10787f-f0fa-437b-bb19-c884beb282fc" />
+<img width="600" height="310" alt="Screenshot 2026-05-04 at 8 23 12 PM" src="https://github.com/user-attachments/assets/1acd5cbf-2cef-44ba-8061-0f47921ef1cf" />
+Figure 12. OpenBCI Cyton BLE Dongle Module
 
 
-Week of 3/30 — SWS Detection + Real-Time Prototype
+**3/31 - Real-Time x Feature Extraction from LSL Stream**
 
-This week, I focused on understanding and implementing a single-channel EEG-based slow-wave sleep (SWS) detection algorithm from literature  . The goal was to translate an existing research method into something lightweight enough to eventually run on embedded hardware.
+**Objective:** Extend the 3/30 offline SWS feature extraction work into a real-time streaming prototype using OpenBCI data.
 
-The core idea of the paper is that SWS can be identified using time-domain characteristics of the EEG signal, rather than relying on frequency-domain features or multiple channels. In particular, slow-wave sleep is associated with high-amplitude, low-frequency oscillations, which can be captured by analyzing zero-crossing behavior of the signal.
+Building off the 3/30 entry, I adapted the x feature extraction code so it could run continuously on live EEG data instead of only on saved Sleep-EDF recordings. The goal was to confirm that the zero-crossing feature pipeline can operate on a rolling 30-second window, matching the epoch length used in the original SWS detection method.
+I connected to the OpenBCI GUI stream through Lab Streaming Layer (LSL) using the stream name obci_eeg1. The script opens an LSL inlet, reads the stream sampling rate, and defaults to 250 Hz if needed. I used channel 0 as the EEG channel while testing, since we’ll only care about one channel and I can wire the headset so that channel 0 corresponds to C3-M2.
+The main real-time structure is a rolling buffer:
+buffer = deque(maxlen=30 * sfreq)
+samples_since_update = 0
+update_stride = sfreq
+This keeps the most recent 30 seconds of EEG data and recomputes the feature vector every 1 second. This means the system does not wait for separate non-overlapping epochs, but instead updates continuously using a sliding window, which is closer to how the final system needs to behave.
+For each 30-second buffer, the code divides the signal into 1-second intervals, subtracts the mean from each interval, detects zero-crossing points, and computes the three x features:
+* x1: mean zero-crossing segment length
+* x2: standard deviation of segment lengths
+* x3: weighted area under the signal between zero crossings
+This real-time version helped verify that the feature extraction algorithm is computationally simple enough to run repeatedly and that the output can update live from the OpenBCI stream. The next step is to connect this feature vector to the trained SWS classifier so that each rolling 30-second window can be classified as SWS or non-SWS in real time.
 
-To prototype this, I used the Sleep-EDF dataset  , which provides labeled EEG recordings segmented into 30-second epochs. I implemented a preprocessing pipeline that mirrors the paper: bandpass filtering (0.3–35 Hz), segmentation into epochs, and further division into 1-second intervals. Within each interval, I subtracted the mean to remove DC offset and computed zero-crossing points (ZCPs), defined as locations where the signal changes sign.
+1. Helper functions for zero-crossings
+def zero_mean_interval(sig_1s):
+    return sig_1s - np.mean(sig_1s)
 
-From these zero-crossing points, the signal is divided into segments. These segments encode important temporal information about the waveform. Faster signals produce many short segments, while slower oscillations produce fewer, longer segments. This becomes particularly useful for SWS detection, since slow waves (~1 Hz) naturally lead to longer segment durations.
+def get_zero_crossing_indices(sig):
+    signs = np.sign(sig).copy()
+    for i in range(len(signs)):
+        if signs[i] == 0:
+            signs[i] = 1 if i == 0 else signs[i - 1]
+    return np.where(np.diff(signs) != 0)[0]
+This part prepares the signal for zero-crossing analysis. zero_mean_interval() subtracts the mean from each 1-second segment so the signal is centered around zero. Then get_zero_crossing_indices() finds where the signal changes sign. The small loop handles exact zeros so they do not get counted as extra crossings.
+
+2. Computing the x features from a 30-second epoch
+def compute_x_features(epoch, sfreq):
+    samples_per_sec = int(sfreq)
+    assert len(epoch) == 30 * samples_per_sec
+
+    all_segment_lengths = []
+    x3_total = 0.0
+
+    for sec in range(30):
+        start = sec * samples_per_sec
+        end = (sec + 1) * samples_per_sec
+        seg_1s = zero_mean_interval(epoch[start:end])
+
+        zc = get_zero_crossing_indices(seg_1s)
+        if len(zc) < 2:
+            continue
+
+        for i in range(len(zc) - 1):
+            e_i = zc[i]
+            e_ip1 = zc[i + 1]
+
+            seg_len_sec = (e_ip1 - e_i) / sfreq
+            all_segment_lengths.append(seg_len_sec)
+
+            area = np.sum(np.abs(seg_1s[e_i:e_ip1])) / sfreq
+            x3_total += seg_len_sec * area
+This block takes a full 30-second window and splits it into 1-second chunks. For each chunk, it zero-means the signal, finds zero-crossings, and then looks at each pair of consecutive crossings. The distance between crossings gives a segment length, and the area under that segment is computed using the absolute value of the signal.
+Across the whole 30 seconds, the code builds up a list of segment lengths for x1 and x2, and accumulates x3 using segment length times area. This is where the time-domain behavior of the signal gets converted into features.
+
+**3/30 - SWS Detection + Real-Time Prototype**
+
+**Objective:** Understand and implement the single-channel zero-crossing-point-based (x) feature vector
+
+I focused on understanding and implementing a single-channel EEG-based slow-wave sleep (SWS) detection algorithm from literature(cite). The goal was to translate an existing research method into something lightweight enough to eventually run on embedded hardware.
+
+The core idea of the paper is that SWS can be identified using time-domain characteristics of the EEG signal, rather than relying on frequency-domain features or multiple channels. In particular, slow-wave sleep is associated with high-amplitude, low-frequency oscillations, which can be captured by analyzing zero-crossing behavior of the signal stemming from the central/frontal brain region.
+
+To prototype this, I used the Sleep-EDF dataset(cite), which provides sleep stage labeled EEG recordings for each adjacent 30-second epoch. I implemented a preprocessing pipeline that mirrors the paper: bandpass filtering (0.3–35 Hz), segmentation into epochs, subtracting the mean of each epoch to remove DC offset and computing zero-crossing points (ZCPs), defined as locations where the signal changes sign.
+
+From these zero-crossing points, the signal is divided into segments. These segments encode important temporal information about the waveform. Faster signals produce many short segments, while slower oscillations produce fewer, longer segments. This becomes particularly useful for SWS detection, since slow waves naturally lead to longer segment durations (slower oscillations).
 
 From this representation, I computed the three primary features:
 	•	x1: mean length of zero-crossing segments
 	•	x2: standard deviation of segment lengths
 	•	x3: weighted area under the signal between zero crossings
-￼<img width="730" height="652" alt="inport natplotlib pyplot as plt" src="https://github.com/user-attachments/assets/9c378b71-64b4-49de-bf29-1de81037d5ee" />
+￼<img width="190" height="302" alt="Screenshot 2026-05-04 at 8 19 07 PM" src="https://github.com/user-attachments/assets/e5471348-14c1-48e1-af71-83cbcad8c15f" />
+Figure 10. Expressions for Each Term in ZCP Feature Vector
 
+<img width="721" height="642" alt="Screenshot 2026-05-04 at 8 20 13 PM" src="https://github.com/user-attachments/assets/75d810ff-db0a-4f71-85cd-f3d4240795f5" />
+Figure 11. Code Excerpt Visualizing Epoch and ZCP Feature Vector Calculated for that and Following Four Epochs
+￼
 The third feature is especially important because it jointly captures amplitude and temporal behavior. Larger amplitudes increase the area under the curve, while slower oscillations increase the spacing between crossings, so x3 effectively encodes the defining characteristics of slow-wave activity.
 
 After validating feature extraction offline, I moved to a real-time prototype using the OpenBCI Cyton board. I configured the OpenBCI GUI to stream EEG data through Lab Streaming Layer (LSL), and wrote a Python script to subscribe to this stream. The script maintains a rolling 30-second buffer (based on the 250 Hz sampling rate), continuously recomputing the feature vector for each epoch window. This allowed me to replicate the offline pipeline in real time, confirming that the approach is viable for embedded implementation later.
 
-<img width="636" height="166" alt="-0 00021" src="https://github.com/user-attachments/assets/43c4bca1-d8b2-4d8f-a63a-f0a9203f2ae4" />
 
+￼
 ￼
 **3/24 – Fixing DGND pin connections**
 

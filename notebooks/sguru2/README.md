@@ -1,3 +1,339 @@
+**4/23 – Embedded closed-loop stimulation on ESP32-C6**
+
+**Objective:** Implement the closed-loop slow-wave stimulation pipeline on the ESP32-C6 using live Cyton EEG data, including filtering, frequency estimation, trough detection, peak prediction, and pink noise triggering.
+Moved the Alg. 2 pipeline from the Python prototype onto the ESP32-C6 running on the breadboard. This version uses live Cyton data over UART, applies the same slow-wave processing logic from the notebook, and then triggers pink noise stimulation through the breadboard audio path.
+This is not on the PCB yet. Right now it is using the ESP32-C6 dev kit and PWM audio output directly into the PAM8302 audio amplifier. The PCB version should use similar logic, except the PCB has the regular ESP32 module and an MCP4822 DAC between the microcontroller and audio amplifier.
+Serial event format
+```cpp
+// Event format:
+//   DATA,t_ms,filtered_uV
+//   FREQ,t_ms,freq_hz,T_ms
+//   TROUGH,trough_t_ms,trough_uV,pred_peak_t_ms
+//   STIM,t_ms
+```
+I set up the Arduino output so the Python plotter could parse each event cleanly. DATA gives the filtered EEG trace, FREQ gives the current autocorrelation-derived frequency estimate, TROUGH gives the detected trough and predicted peak time, and STIM confirms when the audio burst actually fires.
+Core configuration
+```cpp
+static const float FS = 250.0f;
+static const uint32_t SAMPLE_PERIOD_MS = 4;
+
+static const int EPOCH_SEC = 30;
+static const int EPOCH_SAMPLES = 7500;
+
+static const float BAND_LOW = 0.5f;
+static const float BAND_HIGH = 4.0f;
+
+static const uint32_t FREQ_UPDATE_MS = 1000;
+static const float MIN_TROUGH_DISTANCE_SEC = 0.7f;
+static const float MIN_TROUGH_PROM_UV = 25.0f;
+
+bool SWS_Detected = true;
+```
+This defines the main assumptions for the embedded version. The Cyton samples at 250 Hz, so each sample is 4 ms apart and a 30-second epoch is 7500 samples. The processing is focused on 0.5 to 4 Hz because that is the slow-wave range. Frequency is updated once every second, and troughs have to be at least 0.7 seconds apart and below -25 uV to count.
+SWS_Detected is hardcoded true for now because this code is testing Alg. 2 by itself. Later, this should be replaced by the output of Alg. 1.
+Biquad bandpass filtering
+```cpp
+struct Biquad {
+  float b0, b1, b2;
+  float a1, a2;
+  float z1, z2;
+
+  float process(float x) {
+    float y = b0 * x + z1;
+    z1 = b1 * x - a1 * y + z2;
+    z2 = b2 * x - a2 * y;
+    return y;
+  }
+};
+
+Biquad hp = {
+  0.9911536f, -1.9823072f, 0.9911536f,
+ -1.9822289f, 0.9823855f,
+  0.0f, 0.0f
+};
+
+Biquad lp = {
+  0.0023333f, 0.0046666f, 0.0023333f,
+ -1.8580972f, 0.8674304f,
+  0.0f, 0.0f
+};
+
+float bandpassProcess(float x) {
+  return lp.process(hp.process(x));
+}
+```
+This is the embedded version of the causal 0.5 to 4 Hz filter from the Python notebook. Instead of using filtfilt or any non-causal filtering, each sample goes through a highpass and lowpass biquad in real time. This is important because the final system cannot use future samples.
+Rolling buffers for plotting and autocorrelation
+```cpp
+// Rolling 30s filtered buffer for full-rate data / plotting
+float filtBuf[EPOCH_SAMPLES];
+int filtHead = 0;
+int filtCount = 0;
+
+void pushFilteredSample(float y) {
+  filtBuf[filtHead] = y;
+  filtHead = (filtHead + 1) % EPOCH_SAMPLES;
+  if (filtCount < EPOCH_SAMPLES) filtCount++;
+}
+
+
+// Decimated 30s buffer for fast autocorrelation
+float acBuf[AC_SAMPLES];
+int acHead = 0;
+int acCount = 0;
+
+void pushAutocorrSample(float y) {
+  acBuf[acHead] = y;
+  acHead = (acHead + 1) % AC_SAMPLES;
+  if (acCount < AC_SAMPLES) acCount++;
+}
+
+float getAcChrono(int i) {
+  int start = (acHead - acCount + AC_SAMPLES) % AC_SAMPLES;
+  int idx = (start + i) % AC_SAMPLES;
+  return acBuf[idx];
+}
+```
+This keeps the past 30 seconds of filtered data. The full-rate buffer is mainly for keeping the continuous filtered signal available. The autocorrelation buffer is separate and decimated, so the ESP32 does not have to run autocorrelation on all 7500 samples every time.
+Autocorrelation frequency estimate
+```cpp
+bool estimateDominantFreqAutocorr(float &freqHz, float &periodMs) {
+  if (acCount < AC_SAMPLES) return false;
+
+  float mean = 0.0f;
+  for (int i = 0; i < acCount; i++) {
+    mean += getAcChrono(i);
+  }
+  mean /= acCount;
+
+  float energy = 0.0f;
+  for (int i = 0; i < acCount; i++) {
+    float x = getAcChrono(i) - mean;
+    energy += x * x;
+  }
+  if (energy < 1e-6f) return false;
+
+  int minLag = (int)(AC_FS / BAND_HIGH); // 4 Hz => 12 samples at 50 Hz
+  int maxLag = (int)(AC_FS / BAND_LOW);  // 0.5 Hz => 100 samples at 50 Hz
+
+  float bestCorr = -1e30f;
+  int bestLag = minLag;
+
+  for (int lag = minLag; lag <= maxLag; lag++) {
+    float corr = 0.0f;
+
+    for (int i = 0; i < acCount - lag; i++) {
+      float x0 = getAcChrono(i) - mean;
+      float x1 = getAcChrono(i + lag) - mean;
+      corr += x0 * x1;
+    }
+
+    if (corr > bestCorr) {
+      bestCorr = corr;
+      bestLag = lag;
+    }
+  }
+
+  float periodSec = bestLag / AC_FS;
+  freqHz = 1.0f / periodSec;
+  periodMs = periodSec * 1000.0f;
+  return true;
+}
+```
+This is the embedded version of the autocorrelation logic from the notebook. It subtracts the mean, checks signal energy, searches lags corresponding to 0.5 to 4 Hz, and chooses the lag with the highest correlation. The best lag becomes the estimated period, and frequency is just 1 over period.
+This is what lets the device estimate the current slow-wave rhythm from the last 30 seconds, instead of using a fixed frequency.
+Trough detection
+bool detectTrough(float yCurr, int32_t &troughSample, float &troughVal) {
+  if (!havePrev2 || !havePrev1) return false;
+
+  int32_t candidateSample = (int32_t)globalSampleIndex - 1;
+
+  bool isLocalMin = (yPrev1 < yPrev2) && (yPrev1 < yCurr);
+  if (!isLocalMin) return false;
+
+  int minDistSamples = (int)(MIN_TROUGH_DISTANCE_SEC * FS);
+  if ((candidateSample - lastTroughSample) < minDistSamples) return false;
+
+  if (yPrev1 > -MIN_TROUGH_PROM_UV) return false;
+
+  troughSample = candidateSample;
+  troughVal = yPrev1;
+  lastTroughSample = candidateSample;
+  return true;
+}
+This detects troughs causally. It only confirms a trough after the signal starts rising again, so the previous sample has to be lower than the sample before it and the current sample. I also added the minimum distance and amplitude threshold so it does not fire on tiny local minima.
+Main processing function
+void processChannel0Sample(float ch0_uV) {
+  updateClockMappingIfNeeded();
+
+  uint32_t sampleMs = currentSampleTimeMs();
+
+  // 1. Full-rate causal 0.5–4 Hz filtering
+  float y = bandpassProcess(ch0_uV);
+
+  // 2. Store full-rate filtered signal for DATA plotting / full 30s context
+  pushFilteredSample(y);
+
+  // 3. Store decimated filtered signal for cheaper 30s autocorrelation
+  if ((globalSampleIndex % AC_DECIM) == 0) {
+    pushAutocorrSample(y);
+  }
+
+  // 4. Smooth only for trough detection, not for plotting
+  if (!smoothInitialized) {
+    smoothY = y;
+    smoothInitialized = true;
+  } else {
+    smoothY = SMOOTH_ALPHA * y + (1.0f - SMOOTH_ALPHA) * smoothY;
+  }
+
+  // 5. Print bandpassed signal for Python visualization
+  if ((globalSampleIndex % DATA_PRINT_DECIMATION) == 0) {
+    Serial.print("DATA,");
+    Serial.print(sampleMs);
+    Serial.print(",");
+    Serial.println(y, 3);
+  }
+
+  // 6. Update dominant frequency every 1000 ms in sample-time domain
+  if ((sampleMs - lastFreqUpdateSampleMs) >= FREQ_UPDATE_MS) {
+    float fHz, tMs;
+    if (estimateDominantFreqAutocorr(fHz, tMs)) {
+      currentFreqHz = fHz;
+      currentPeriodMs = tMs;
+
+      Serial.print("FREQ,");
+      Serial.print(sampleMs);
+      Serial.print(",");
+      Serial.print(currentFreqHz, 3);
+      Serial.print(",");
+      Serial.println(currentPeriodMs, 1);
+    }
+
+    lastFreqUpdateSampleMs = sampleMs;
+  }
+
+  // 7. Trough detection + peak prediction + audio scheduling
+  if (SWS_Detected && currentPeriodMs > 0.0f) {
+    int32_t troughSample;
+    float troughVal;
+
+    // Detect troughs on smoothed filtered signal
+    if (detectTrough(smoothY, troughSample, troughVal)) {
+      uint32_t troughSampleMs = sampleTimeMsFromIndex((uint32_t)troughSample);
+      uint32_t predPeakSampleMs = troughSampleMs + (uint32_t)(currentPeriodMs / 2.0f);
+
+      Serial.print("TROUGH,");
+      Serial.print(troughSampleMs);
+      Serial.print(",");
+      Serial.print(troughVal, 3);
+      Serial.print(",");
+      Serial.println(predPeakSampleMs);
+
+      schedulePeakStim(predPeakSampleMs);
+    }
+  }
+
+  // Update trough detector history using smoothed signal
+  yPrev2 = yPrev1;
+  yPrev1 = smoothY;
+
+  if (!havePrev1) havePrev1 = true;
+  else if (!havePrev2) havePrev2 = true;
+
+  globalSampleIndex++;
+}
+This is the main loop for one EEG sample. It filters the sample, stores it, updates the autocorrelation buffer, prints data for visualization, updates frequency once per second, detects troughs, predicts the next peak using half the estimated period, and schedules stimulation.
+This block is basically the full closed-loop logic in one place.
+Audio scheduling and stimulation
+void startNoiseBurst(uint32_t eventSampleMs) {
+  audioActive = true;
+  audioStopWallMs = millis() + NOISE_DURATION_MS;
+
+  Serial.print("STIM,");
+  Serial.println(eventSampleMs);
+}
+
+void updateScheduledStim() {
+  if (!peakScheduled) return;
+
+  uint32_t nowWallMs = millis();
+
+  if ((int32_t)(nowWallMs - scheduledPeakWallMs) >= 0) {
+    peakScheduled = false;
+    startNoiseBurst(scheduledPeakSampleMs);
+  }
+}
+Once a peak target is scheduled, this waits until the mapped wall-clock time and starts the pink noise burst. The STIM line confirms when the stimulation was triggered.
+Python serial visualizer
+def process_line(line):
+    global latest_freq, latest_T
+
+    parts = line.strip().split(",")
+    if len(parts) < 2:
+        return
+
+    kind = parts[0]
+
+    try:
+        with lock:
+            if kind == "DATA":
+                # DATA,t_ms,filtered_uV
+                t_ms = int(parts[1])
+                y = float(parts[2])
+                data_t.append(t_ms)
+                data_y.append(y)
+
+            elif kind == "FREQ":
+                # FREQ,t_ms,freq_hz,T_ms
+                latest_freq = float(parts[2])
+                latest_T = float(parts[3])
+                if PRINT_EVENTS:
+                    print(line)
+
+            elif kind == "TROUGH":
+                # TROUGH,trough_t_ms,trough_uV,pred_peak_t_ms
+                t_ms = int(parts[1])
+                y = float(parts[2])
+                p_ms = int(parts[3])
+
+                trough_t.append(t_ms)
+                trough_y.append(y)
+
+                pred_t.append(p_ms)
+                pred_y.append(abs(y))
+
+                if PRINT_EVENTS:
+                    print(line)
+
+            elif kind == "STIM":
+                # STIM,stim_t_ms
+                t_ms = int(parts[1])
+                stim_t.append(t_ms)
+                stim_y.append(0.0)
+
+                if PRINT_EVENTS:
+                    print(line)
+
+            elif kind == "BOOT":
+                if PRINT_EVENTS:
+                    print(line)
+
+    except Exception:
+        pass
+The Python script reads the ESP32 serial output and stores each event type in its own buffer. DATA becomes the continuous waveform, TROUGH becomes detected trough markers, pred_t becomes predicted peak markers, and STIM becomes the actual audio stimulation marker.
+Example serial output:
+Running. Close plot window to stop.
+FREQ,30000,4.167,240.0
+TROUGH,30208,-167.532,30328
+STIM,30328
+TROUGH,30908,-53.983,31028
+STIM,31028
+FREQ,31000,4.167,240.0
+FREQ,32000,3.333,300.0
+TROUGH,32416,-63.129,32566
+STIM,32566
+This confirmed that the ESP32 was producing frequency updates, trough detections, predicted peaks, and real audio stimulation events.
 
 
 **4/22 - Real-time trough detection + peak prediction (LSL streaming)**
@@ -144,7 +480,7 @@ So now the full pipeline is actually happening online:
 * Real-time trough detection
 * Immediate peak prediction for stimulation timing
   
-**4/21 Alg. 2 development (frequency estimation + phase-aligned stimulation)**
+**4/21 - Alg. 2 development (frequency estimation + phase-aligned stimulation)**
 
 **Objective:** Develop an embedded-compatible phase-aligned stimulation algorithm using causal filtering, autocorrelation-based frequency estimation, trough detection, and peak prediction.
 

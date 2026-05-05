@@ -1314,27 +1314,27 @@ Basically, today I switched to Sleep-EDF Expanded because it provides properly f
 **Objective:** Implement real-time x feature extraction from Cyton EEG data on ESP32 and evaluate whether to proceed with full PCB bring-up or current hybrid setup.
 On the software side, I extended the x feature extraction pipeline to run directly on the ESP32 using raw Cyton data streamed over UART. Unlike the earlier Python version, this required working with packetized data and integrating feature extraction into a continuous embedded loop.
 The pipeline starts with parsing Cyton packets and converting raw ADC counts into a usable signal:
-
+```python
 int32_t counts = int24ToInt32(pkt[base], pkt[base + 1], pkt[base + 2]);
 
 float uV = counts * scale_uV_per_count;
 
 float rawVolts = uV / 1000000.0f;
-
+```
 This converts the 24-bit ADC output into microvolts and then into a voltage signal. Samples are pushed into a rolling buffer:
-
+```python
 ringBuffer[writeIndex] = filteredForMLP;
 
 writeIndex = (writeIndex + 1) % MODEL_SAMPLES_PER_EPOCH;
-
+```
 This buffer represents a continuous 30-second window (updating every second). Once the buffer is filled, I reconstruct a contiguous epoch and compute the x features:
-
+```python
 getContiguousEpoch(epoch);
 
 computeXFeatures(epoch, MODEL_SFREQ, x1, x2, x3, valid);
-
+```
 Inside computeXFeatures, the logic mirrors the Python implementation. The 30-second window is split into 1-second segments, each segment is zero-meaned, and zero-crossings are detected:
-
+```python
 for (int sec = 0; sec < EPOCH_SECONDS; sec++) {
 
   ...
@@ -1349,8 +1349,9 @@ for (int sec = 0; sec < EPOCH_SECONDS; sec++) {
 	
   }
 }
+```
 From these zero-crossings, segment lengths and areas are computed and accumulated:
-
+```python
 float segLenSec = float(e_ip1 - e_i) / float(sfreq);
 
 segLenSum += segLenSec;
@@ -1359,15 +1360,15 @@ segLenSum += segLenSec;
 area += fabs(seg[k]);
 
 x3Total += double(segLenSec) * area;
-
+```
 Finally, the three features are computed:
-
+```python
 x1 = float(segLenSum / segCount);
 
 x2 = float(sqrt(variance));
 
 x3 = float(x3Total);
-
+```
 This produces the same feature vector as before with the python prototype (interfacing with the LSL stream generated from OpenBCI GUI), but now entirely in real time on the ESP32 using live EEG data directly from the intercepted bluetooth transmission. 
 
 Separately, we ran into an unexpected situation with hardware. We had not received confirmation from our TA about our round 3/4 PCBs being delivered, but when we checked the lab storage, we found that they had actually already arrived. This forced us to decide whether to pivot to assembling the full PCB or continue with our current Cyton + audio PCB setup.
@@ -1510,7 +1511,7 @@ For each 30-second buffer, the code divides the signal into 1-second intervals, 
 This real-time version helped verify that the feature extraction algorithm is computationally simple enough to run repeatedly and that the output can update live from the OpenBCI stream. The next step is to connect this feature vector to the trained SWS classifier so that each rolling 30-second window can be classified as SWS or non-SWS in real time.
 
 1. Helper functions for zero-crossings
-   
+```python
 def zero_mean_interval(sig_1s):
 
     return sig_1s - np.mean(sig_1s)
@@ -1526,10 +1527,11 @@ def get_zero_crossing_indices(sig):
             signs[i] = 1 if i == 0 else signs[i - 1]
 			
     return np.where(np.diff(signs) != 0)[0]
-	
+```
 This part prepares the signal for zero-crossing analysis. zero_mean_interval() subtracts the mean from each 1-second segment so the signal is centered around zero. Then get_zero_crossing_indices() finds where the signal changes sign. The small loop handles exact zeros so they do not get counted as extra crossings.
 
 2. Computing the x features from a 30-second epoch
+```python
 def compute_x_features(epoch, sfreq):
     samples_per_sec = int(sfreq)
     assert len(epoch) == 30 * samples_per_sec
@@ -1555,6 +1557,7 @@ def compute_x_features(epoch, sfreq):
 
             area = np.sum(np.abs(seg_1s[e_i:e_ip1])) / sfreq
             x3_total += seg_len_sec * area
+```
 This block takes a full 30-second window and splits it into 1-second chunks. For each chunk, it zero-means the signal, finds zero-crossings, and then looks at each pair of consecutive crossings. The distance between crossings gives a segment length, and the area under that segment is computed using the absolute value of the signal.
 Across the whole 30 seconds, the code builds up a list of segment lengths for x1 and x2, and accumulates x3 using segment length times area. This is where the time-domain behavior of the signal gets converted into features.
 

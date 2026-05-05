@@ -62,70 +62,146 @@ After validating feature extraction offline, I moved to a real-time prototype us
 <img width="636" height="166" alt="-0 00021" src="https://github.com/user-attachments/assets/43c4bca1-d8b2-4d8f-a63a-f0a9203f2ae4" />
 
 ￼
+3/24 – Fixing DGND pin connections
 
-3/24 - fixing dgnd pin connections
-3/23 - fixing agnd pin connections
+Objective: Ensure a continuous digital ground plane and eliminate DRC errors caused by DGND islands.
 
-3/12
-skeptical about:
+Same issue as the AGND problem from 3/23, but now on the DGND side (right side of the board). DRC flagged multiple disconnected copper “islands,” which break return current paths and can introduce instability in digital signaling. This is especially important since DGND carries switching noise from the microcontroller, SPI lines, and audio components.
 
-need srb2 routing from input connector?
+I fixed this by adding vias to tie top-layer DGND regions to a continuous bottom DGND plane and rerouting traces that were unintentionally isolating copper regions. I also made sure all DGND pins (MCU, DAC, amplifier) had a clean, low-impedance path to the same ground reference. This keeps the digital return paths well-defined and prevents noise from coupling into the analog side, consistent with our AGND/DGND separation strategy in the design.
+￼
+Fixing DGND connections from PIC32 pins
 
-general pcb routing
+Once these fixes were made, which John helped with some that I didn’t know how to address, we submitted this PCB for the fourth round pass.
+￼
+3/23 – Fixing AGND pin connections
 
-3/11
-pcb organizing and routing. pins were divided by 16 on each side of the ads, put capacitors compactly along each relevant side corresponding to *what each set of 16 pins on side of ads corresponds to *
-notes on pcb - considering moving power entry to agnd side, but its actually ok 
+Objective: Ensure a continuous analog ground plane and eliminate DRC errors caused by AGND islands.
 
-3/10
-breadboard development: problem - ads1299 components were not breadboardable, so pcb printing (whatever word for putting component on would have to be soldered not breadboard pins). we pivoted and worked on audio subsystem components, perfect since we were implementing in schematic for next pcb order. 
+AGND is defined as a copper zone on the left side of the board across both layers. When running DRC, I saw many errors related to unconnected “islands,” which happen when copper regions are unintentionally isolated due to routing or component placement. This is especially problematic for the analog front end, since the ADS1299 relies on a clean, stable ground reference for microvolt-level EEG signals.
 
+To fix this, I used the bottom layer as a continuous AGND plane and added vias from all AGND pins (ADS1299, input caps, protection circuitry) to that plane. I also adjusted traces that were cutting through zones and breaking connectivity. After this, the AGND region became electrically continuous, which is critical for reducing noise and ensuring accurate signal acquisition.
+￼
+￼
+Fixing AGND connections from ADS1299 pins
 
-media: picture of breadboard (speaker connected to microcontroller...), code for pink noise generation
-<img width="277" height="587" alt="Screenshot 2026-03-23 at 3 01 41 PM" src="https://github.com/user-attachments/assets/9825c349-c282-4628-9cb7-45ee67294c08" />
+**3/12 - Routing concerns / design sanity check**
 
+**Objective:** Re-evaluate routing decisions before locking in PCB layout.
 
+At this point, I stepped back and questioned whether some of our routing decisions were actually necessary, specifically around SRB2 and general EEG input routing. After revisiting the ADS1299 architecture and our use case, I realized that since we are only using a single differential channel (C3–M2), we can simplify a lot of the routing.
 
+SRB2 is useful for multi-channel referencing, but for our single-channel design it is not strictly required in the same way, so over-routing it just adds complexity and potential noise pickup. This reinforced the idea that we should keep routing minimal and directly aligned with the single-channel SWS detection approach, which also helps reduce latency and PCB complexity.
 
-initially made random white noise (2 lines) to confirm working, it made a faint noise we didn't hear till we increased amplitude. then made pink noise (refer to code, how to make pink noise)
+With our current PCB in order, I confirmed that it passed the audit on PCBway and submitted for the third round pass. However, I soon realized there were many DRC errors that we had not addressed. We couldn’t address this in time for the third round, so we planned to clear these up during/after spring break to submit on the fourth round pass.
 
-next steps (maybe next entry) - looking into how to make that pink noise phase aligned however the sws algorithm does it. 
+<img width="871" height="507" alt="Screenshot 2026-05-04 at 7 54 25 PM" src="https://github.com/user-attachments/assets/59126a6d-350f-4c90-a732-1681a614b46a" />
+Figure 6. Full PCB Schematic with Signal Processing, Audio, and Power Subsystems Implemented with no ERC Errors
+￼
+**3/11 - PCB organization and routing**
 
-3/9
-picking up components - we got the ads1299, *whatever else part we picked up* our goal for the breadboard demo is to get an visualize an eeg signal. still waiting on pic32 microcontroller.
+**Objective:** Organize component placement and routing around ADS1299 for clean layout and low-noise operation.
 
-finalized signal processing subsystem in schematic by adding input connector, bias protection (whatever the compoenents between electrode and ads are). these use the reference and bias channels (in our case, m2 i think) to support the input channel c3 sent to the ads. we plan on using one channel as it is supported by paper (cite) and would minimize latency in data processing and sws dection (provide support for this). also minimizes size of signal processing subsystem on pcb, better for over all comfort. 
-<img width="853" height="494" alt="Screenshot 2026-03-23 at 2 45 01 PM" src="https://github.com/user-attachments/assets/3002cdad-c230-4e04-899f-226ab506b2b9" />
+I structured the layout based on the ADS1299 pin distribution, which is split across sides (~16 pins per side). I grouped components accordingly and placed decoupling capacitors as close as possible to their respective pins, which is important for stabilizing supply voltages and reducing noise.
 
+I also separated the board into functional regions:
 
-media: pictures of those parts on schematic
+* Analog front end (ADS1299 + input circuitry)
+* Digital/control (MCU, SPI)
+* Power
 
-For PCB design, I assigned footprints to all our parts in each subsystem, looking into capacitor/resister threshold-size constraints,
-
-*talk about some design decisions we made in the process*
-
-3/3
-pcb implementation. doing schematic. ads1299 power, input output, capacitor and bias connections (and their purpose, design decisions)
-discuss digital and analog rails for power, and how those route to the ads - our decision to make the +-2.5V analog rails to 0-5V analog rails (so avss=agnd)(talk about why we did this and what this does)
-
-talk about the key pins/regions of the ads1299, their purpose, and what we did to implement those in our shcematic
-
-2/25
-
-considered dongle development for *whatever comm protocal cyton +ble module use, some kind of hgiehr bitrate*, decided we could make our device more accessible by communicating over *regular bluetooth, something about 1 channel info needing lower bitratei think*
-
-include math justification for ble decision from design document
-
-finalizing specific components, including ads with 8 channels matching our cap if we want to expand. *just talk about stuff from component list in design doc idk*
-
-Tuesday - Feb 24
-
-Overview -
-
-Updated design document - we looked over parts, ensuring their current support and delivery, and planned subsystem development.
+Initially considered moving the power entry closer to the AGND side, but decided against it because it would bring switching noise too close to the analog front end. Instead, I kept power and digital components on the DGND side and maintained physical separation from the analog region. 
 
 
-**2/23 – Signal processing subsystem focus + ADS1299 study**
+**3/10 - Breadboard development (audio subsystem pivot)**
+
+**Objective:** Prototype audio output path and verify ability to generate stimulation signals.
+
+Since the ADS1299 is not breadboardable, we pivoted to developing the audio subsystem, which we also needed for the PCB anyway. We set up a breadboard with the ESP32, amplifier, and speaker to test signal generation.
+<img width="252" height="564" alt="Screenshot 2026-05-04 at 7 50 08 PM" src="https://github.com/user-attachments/assets/0e0acdaa-210e-4632-8557-7219f768c13d" />
+Figure 5. Audio Subsystem on Breadboard
+
+I first generated simple white noise using a basic random signal to confirm the system worked. Initially, the output was very faint, but after increasing amplitude, it became audible. After confirming functionality, I implemented pink noise generation, which is more relevant for sleep stimulation since it emphasizes lower frequencies.
+
+This validated that the audio chain works end-to-end and gave us a working prototype for stimulation output. It also highlighted the importance of amplitude scaling and clean signal generation. We did not have access to a DAC yet, but plan to include one for the PCB.
+
+
+**3/9 - Component pickup + schematic finalization + audio subsystem**
+
+**Objective:** Prepare schematic for PCB and refine audio subsystem design. Finalize signal processing schematic and begin hardware setup.
+
+We picked up key components, including the ADS1299, and started finalizing the signal processing subsystem. The goal for the breadboard demo was initially to visualize EEG signals, but since we were still waiting on the PIC32, progress focused more on schematic development.
+
+I completed the input and protection circuitry, which includes:
+
+* Diode clamping network for voltage spikes
+* 2.2 kΩ series resistors for current limiting
+* 100 pF capacitors for high-frequency noise filtering
+
+These components ensure that signals entering the ADS1299 are safe and clean. I also finalized the use of a single EEG channel (C3 referenced to M2), which is supported by literature for SWS detection and helps reduce latency, power, and PCB size. This simplification is important for making the system more practical as a wearable device.
+
+<img width="749" height="430" alt="Screenshot 2026-05-04 at 7 49 02 PM" src="https://github.com/user-attachments/assets/bd86f71e-5a6b-4d01-bebd-031f9d900865" />
+Figure 4. Channel Input Protection Schematic for Signal Processing Subsystem ￼
+
+I assigned footprints to all components, mostly choosing 0603 packages for passives to balance compactness and manufacturability. While doing this, I also considered how component values relate to footprint size (e.g., larger capacitance often requires physically larger packages due to voltage rating and dielectric constraints).
+
+For the audio subsystem, I initially planned to use PWM from the microcontroller directly into the amplifier with an RC filter. However, I realized this would introduce high-frequency switching noise, which is problematic in a system that also includes a sensitive analog front end.
+
+To address this, I added a DAC (MCP4822) between the MCU and amplifier. This converts the digital signal into a true analog output, reducing noise and improving signal quality. I also added a coupling capacitor (C40) between the DAC and amplifier input to block DC offset, since the amplifier expects an AC-coupled signal.
+￼<img width="418" height="441" alt="Screenshot 2026-05-04 at 7 48 24 PM" src="https://github.com/user-attachments/assets/17343de8-e896-46b6-98f5-e79620f609fc" />
+Figure 3. Audio Subsystem Schematic
+
+**3/3 - PCB implementation (schematic development)**
+
+**Objective:** Build complete ADS1299-based signal processing schematic.
+
+I worked on the full schematic for the signal processing subsystem, focusing on correct implementation of power, inputs, and interfaces. One key design decision was to use a single-supply configuration (0–5V) instead of ±2.5V, effectively setting AVSS = AGND. This simplifies the power design and avoids needing a negative rail.
+
+I implemented all key ADS1299 connections:
+
+* Differential inputs (IN1P/IN1N)
+* Reference pins with decoupling capacitors
+* Bias network for stabilizing common-mode signal
+* SPI interface to MCU
+* DRDY interrupt for timing (250 Hz sampling -> ~4 ms period)
+
+I also added proper decoupling (0.1 µF + 1 µF) on supply rails to stabilize voltage and reduce noise. Overall, the goal was to create a low-noise environment suitable for microvolt EEG signals.
+
+
+**2/25 - Communication + component decisions**
+
+**Objective:** Decide communication method and finalize major system components.
+
+We considered different communication approaches, including a custom dongle for higher bitrate transmission, but ultimately decided to use standard Bluetooth (BLE). Since we are only using a single EEG channel, the data rate is relatively low (~6 kbps at 250 Hz sampling), so BLE is more than sufficient.
+
+This decision prioritizes accessibility and ease of use, especially for integration with a mobile app, while still meeting performance requirements.
+
+We also finalized key components across subsystems, including:
+
+* ADS1299 for signal acquisition (with room to scale up to 8 channels)
+* PIC32 microcontroller
+* BLE module
+* Audio chain (DAC, amplifier, speaker)
+
+**2/24 - Design document update + testing plan**
+
+**Objective:** Finalize component selection and define verification strategy for the system.
+
+We updated the design document by reviewing all components, ensuring availability, compatibility, and delivery timelines. This led to finalizing the full subsystem/component breakdown (headband, ADS1299, PIC32, BLE module, DAC, amplifier, etc.), which establishes a clear hardware architecture for the project.
+
+Table 1. Components Ordered
+<img width="561" height="415" alt="Screenshot 2026-05-04 at 7 46 09 PM" src="https://github.com/user-attachments/assets/ac7ac9c7-6da4-4c8f-a34f-71ec74fe6f3b" />
+
+
+I also worked on defining testing procedures, focusing on the signal processing subsystem. One key requirement from the Sound Asleep reference is that artifact-contaminated data must be less than 10% over long recordings. OpenBCI identifies artifacts using ADC saturation, which occurs when the analog signal exceeds the ADC’s measurable range and clips.
+
+Based on this, I proposed measuring the fraction of time where samples are saturated:
+
+* artifact fraction = (time in saturation) / (total recording time)
+
+Additionally, I added a requirement to verify the accuracy of our SWS detection model against labeled data. This ensures not only that the hardware works, but that the system meets performance expectations in detecting slow-wave sleep.
+
+**2/23 - Signal processing subsystem focus + ADS1299 study**
 
 **Objective:**
  Understand ADS1299 operation and evaluate simplifying system to single-channel EEG.
@@ -147,7 +223,7 @@ This helped clarify how signals flow through the chip and informed later schemat
 Figure 2. ADS1299 Analog Front-End Functional Block Diagram
 
 
-**2/18 – Initial research + team planning**
+**2/18 - Initial research + team planning**
 
 **Objective:** Establish project direction and begin refining design from proposal.
 
@@ -158,7 +234,7 @@ I began iterating on the design document based on TA feedback, focusing on the s
 This session set the foundation for moving from a conceptual proposal to a concrete system design.
 
 
-**2/12 – Proposal refinement + system architecture**
+**2/12 - Proposal refinement + system architecture**
 
 **Objective:** Refine design section of proposal and define system-level architecture.
 

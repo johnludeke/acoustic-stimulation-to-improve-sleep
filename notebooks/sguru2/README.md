@@ -62,30 +62,35 @@ After validating feature extraction offline, I moved to a real-time prototype us
 <img width="636" height="166" alt="-0 00021" src="https://github.com/user-attachments/assets/43c4bca1-d8b2-4d8f-a63a-f0a9203f2ae4" />
 
 ￼
-3/24 – Fixing DGND pin connections
+**3/24 – Fixing DGND pin connections**
 
-Objective: Ensure a continuous digital ground plane and eliminate DRC errors caused by DGND islands.
+**Objective:** Ensure a continuous digital ground plane and eliminate DRC errors caused by DGND islands.
 
 Same issue as the AGND problem from 3/23, but now on the DGND side (right side of the board). DRC flagged multiple disconnected copper “islands,” which break return current paths and can introduce instability in digital signaling. This is especially important since DGND carries switching noise from the microcontroller, SPI lines, and audio components.
 
 I fixed this by adding vias to tie top-layer DGND regions to a continuous bottom DGND plane and rerouting traces that were unintentionally isolating copper regions. I also made sure all DGND pins (MCU, DAC, amplifier) had a clean, low-impedance path to the same ground reference. This keeps the digital return paths well-defined and prevents noise from coupling into the analog side, consistent with our AGND/DGND separation strategy in the design.
 ￼
-Fixing DGND connections from PIC32 pins
+<img width="390" height="99" alt="Screenshot 2026-05-04 at 8 01 40 PM" src="https://github.com/user-attachments/assets/e829923e-9516-45cb-8f3c-b9466a30d35e" />
+Figure 8. Example of Fixing DGND connections from PIC32 pins
 
 Once these fixes were made, which John helped with some that I didn’t know how to address, we submitted this PCB for the fourth round pass.
-￼
-3/23 – Fixing AGND pin connections
 
-Objective: Ensure a continuous analog ground plane and eliminate DRC errors caused by AGND islands.
+<img width="857" height="779" alt="Screenshot 2026-05-04 at 8 02 11 PM" src="https://github.com/user-attachments/assets/49d586a0-b6f6-49e1-a7f9-dbb8f62e895f" />
+Figure 9. PCB Submitted for Fourth Round Pass
+
+**3/23 - Fixing AGND pin connections**
+
+**Objective:** Ensure a continuous analog ground plane and eliminate DRC errors caused by AGND islands.
 
 AGND is defined as a copper zone on the left side of the board across both layers. When running DRC, I saw many errors related to unconnected “islands,” which happen when copper regions are unintentionally isolated due to routing or component placement. This is especially problematic for the analog front end, since the ADS1299 relies on a clean, stable ground reference for microvolt-level EEG signals.
 
 To fix this, I used the bottom layer as a continuous AGND plane and added vias from all AGND pins (ADS1299, input caps, protection circuitry) to that plane. I also adjusted traces that were cutting through zones and breaking connectivity. After this, the AGND region became electrically continuous, which is critical for reducing noise and ensuring accurate signal acquisition.
 ￼
-￼
-Fixing AGND connections from ADS1299 pins
+￼<img width="293" height="545" alt="Screenshot 2026-05-04 at 8 00 26 PM" src="https://github.com/user-attachments/assets/1564f5de-5e46-47b8-8939-bd87bbb19d49" />
+Figure 7. Examples of Fixing AGND connections from ADS1299 pins using Vias
 
-**3/12 - Routing concerns / design sanity check**
+
+**3/12 - Routing concerns / design check**
 
 **Objective:** Re-evaluate routing decisions before locking in PCB layout.
 
@@ -98,6 +103,7 @@ With our current PCB in order, I confirmed that it passed the audit on PCBway an
 <img width="871" height="507" alt="Screenshot 2026-05-04 at 7 54 25 PM" src="https://github.com/user-attachments/assets/59126a6d-350f-4c90-a732-1681a614b46a" />
 Figure 6. Full PCB Schematic with Signal Processing, Audio, and Power Subsystems Implemented with no ERC Errors
 ￼
+
 **3/11 - PCB organization and routing**
 
 **Objective:** Organize component placement and routing around ADS1299 for clean layout and low-noise operation.
@@ -141,7 +147,7 @@ I completed the input and protection circuitry, which includes:
 These components ensure that signals entering the ADS1299 are safe and clean. I also finalized the use of a single EEG channel (C3 referenced to M2), which is supported by literature for SWS detection and helps reduce latency, power, and PCB size. This simplification is important for making the system more practical as a wearable device.
 
 <img width="749" height="430" alt="Screenshot 2026-05-04 at 7 49 02 PM" src="https://github.com/user-attachments/assets/bd86f71e-5a6b-4d01-bebd-031f9d900865" />
-Figure 4. Channel Input Protection Schematic for Signal Processing Subsystem ￼
+Figure 3. Channel Input Protection Schematic for Signal Processing Subsystem ￼
 
 I assigned footprints to all components, mostly choosing 0603 packages for passives to balance compactness and manufacturability. While doing this, I also considered how component values relate to footprint size (e.g., larger capacitance often requires physically larger packages due to voltage rating and dielectric constraints).
 
@@ -149,7 +155,7 @@ For the audio subsystem, I initially planned to use PWM from the microcontroller
 
 To address this, I added a DAC (MCP4822) between the MCU and amplifier. This converts the digital signal into a true analog output, reducing noise and improving signal quality. I also added a coupling capacitor (C40) between the DAC and amplifier input to block DC offset, since the amplifier expects an AC-coupled signal.
 ￼<img width="418" height="441" alt="Screenshot 2026-05-04 at 7 48 24 PM" src="https://github.com/user-attachments/assets/17343de8-e896-46b6-98f5-e79620f609fc" />
-Figure 3. Audio Subsystem Schematic
+Figure 4. Audio Subsystem Schematic
 
 **3/3 - PCB implementation (schematic development)**
 

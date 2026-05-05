@@ -1,5 +1,7 @@
 **4/18 – Epoch / label alignment + annotation sanity checks**
+
 **Objective:** Verify that Sleep-EDF Expanded hypnogram annotations correctly align with PSG EEG data before building the supervised training pipeline.
+
 Started by verifying that the Sleep-EDF Expanded hypnogram labels actually aligned with the PSG EEG data before building the model. Since the classifier operates on 30-second epochs, I first checked whether the annotations were stored as individual 30 s labels or longer segments.
 ```python
 print("First 20 annotation descriptions:")
@@ -33,6 +35,7 @@ Labeled 30s epochs: 944
 Difference: -81
 
 This was important because it means I should not blindly cut the full EEG recording into 30-second windows. Only annotation-backed epochs should be used for supervised training.
+
 
 **4/14 - Real-time x feature extraction on ESP32 + design decision on PCB direction**
 

@@ -4,8 +4,10 @@ References:
 2. Can, Mustafa Melih. “Open-Source DIY EEG: Brainwaves on a Custom PCB.” Hackster.Io, 18 Sept. 2025, www.hackster.io/mustafamelihcan/open-source-diy-eeg-brainwaves-on-a-custom-pcb-99146e. 
 3. “Cyton Data Format: Openbci Documentation.” OpenBCI Documentation RSS, 16 July 2025, docs.openbci.com/Cyton/CytonDataFormat/. 
 4. “Cyton Specs: Openbci Documentation.” OpenBCI Documentation RSS, 15 July 2025, docs.openbci.com/Cyton/CytonSpecs/. 
-5. Shibboleth Authentication Request, www-sciencedirect-com.proxy2.library.illinois.edu/science/article/pii/S0896627313002304?via%3Dihub. Accessed 4 May 2026. 
-6. Su, Bo-Lin et al. “Detecting slow wave sleep using a single EEG signal channel.” Journal of neuroscience methods vol. 243 (2015): 47-52. doi:10.1016/j.jneumeth.2015.01.023
+5. Kemp, Bob. “Sleep-EDF Database Expanded.” PhysioNet, 24 Oct. 2013, physionet.org/content/sleep-edfx/1.0.0/. 
+6. Kemp, Bob. “Sleep-EDF Database.” PhysioNet, 12 Dec. 2002, www.physionet.org/content/sleep-edf/1.0.0/. 
+7. Shibboleth Authentication Request, www-sciencedirect-com.proxy2.library.illinois.edu/science/article/pii/S0896627313002304?via%3Dihub. Accessed 4 May 2026. 
+8. Su, Bo-Lin et al. “Detecting slow wave sleep using a single EEG signal channel.” Journal of neuroscience methods vol. 243 (2015): 47-52. doi:10.1016/j.jneumeth.2015.01.023
 ```
 
 **4/26 - Full system integration + requirement verification prep**

@@ -1,6 +1,7 @@
 
-4/19 – Feature extraction + single-record validation
-Objective: Implement and validate single-record x feature extraction from 30-second labeled EEG epochs for binary SWS classification.
+**4/19 – Feature extraction + single-record validation**
+
+**Objective:** Implement and validate single-record x feature extraction from 30-second labeled EEG epochs for binary SWS classification.
 
 Implemented the feature extraction portion of python-SWS-prediction.ipynb. First, I set up imports for EDF handling, signal processing, model training, and model saving:
 ```python

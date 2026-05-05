@@ -1,4 +1,134 @@
 
+
+**4/20 - Full dataset build, model training, comparison, and saving**
+
+**Objective:** Build the full Sleep-EDF Expanded feature dataset, train multiple SWS classifiers, compare performance, and save models for embedded implementation.
+
+Built the full dataset across all matched Sleep-EDF Expanded records. Each record is loaded, converted into 30-second labeled epochs, converted into x = [x1, x2, x3], and stored with its record key.
+```python
+def build_dataset(root_dir):
+    pairs = match_sleep_edf_pairs(root_dir)
+
+    X_all = []
+    y_all = []
+    groups_all = []
+
+    for psg_path, hyp_path, record_key in pairs:
+        try:
+            X_rec, y_rec, ch_name, sfreq = read_sleep_edf_record(psg_path, hyp_path)
+
+            X_all.append(X_rec)
+            y_all.append(y_rec)
+            groups_all.extend([record_key] * len(y_rec))
+
+            print(f"{record_key}: {len(y_rec)} epochs | ch={ch_name} | sfreq={sfreq}")
+
+        except Exception as e:
+            print(f"Skipping {record_key}: {e}")
+
+    X_all = np.vstack(X_all)
+    y_all = np.concatenate(y_all)
+    groups_all = np.array(groups_all)
+
+    return X_all, y_all, groups_all
+```
+Dataset sanity checks:
+```python
+X, y, groups = build_dataset(data_dir)
+
+print("Dataset shape:", X.shape)
+print("Label shape:", y.shape)
+print("Num records represented:", len(np.unique(groups)))
+print("Positive class fraction (SWS):", y.mean())
+print("Feature mins:", X.min(axis=0))
+print("Feature maxs:", X.max(axis=0))
+```
+Output:
+```markdown
+Dataset shape: (42615, 3)
+Label shape: (42615,)
+Num records represented: 44
+Positive class fraction: 0.1505
+```
+This confirmed that SWS is the minority class, so balanced metrics are more useful than raw accuracy.
+Next, I split by record instead of by epoch to avoid data leakage:
+```python
+gss = GroupShuffleSplit(n_splits=1, test_size=0.2, random_state=42)
+train_idx, test_idx = next(gss.split(X, y, groups=groups))
+
+X_train, X_test = X[train_idx], X[test_idx]
+y_train, y_test = y[train_idx], y[test_idx]
+```
+Output:
+```markdown
+Train size: 34116
+Test size: 8499
+Train positive fraction: 0.1598
+Test positive fraction: 0.1133
+```
+Then I trained logistic regression, MLP, and random forest models:
+```python
+models = {
+    "logreg": Pipeline([
+        ("scaler", StandardScaler()),
+        ("clf", LogisticRegression(
+            class_weight="balanced",
+            max_iter=2000,
+            random_state=42
+        )),
+    ]),
+
+    "mlp": Pipeline([
+        ("scaler", StandardScaler()),
+        ("clf", MLPClassifier(
+            hidden_layer_sizes=(16,),
+            activation="relu",
+            max_iter=1000,
+            random_state=42
+        )),
+    ]),
+
+    "rf": RandomForestClassifier(
+        n_estimators=300,
+        max_depth=6,
+        class_weight="balanced",
+        random_state=42
+    ),
+}
+```
+Training/evaluation loop:
+```python
+for name, model in models.items():
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+
+    bal_acc = balanced_accuracy_score(y_test, y_pred)
+    cm = confusion_matrix(y_test, y_pred)
+    report = classification_report(y_test, y_pred, digits=4)
+
+    print("Balanced accuracy:", bal_acc)
+    print("Confusion matrix:\n", cm)
+    print(report)
+```
+Main results:
+```markdown
+Logistic Regression balanced accuracy: 0.9371
+MLP balanced accuracy: 0.9282
+```
+Logistic regression caught almost all SWS epochs but produced more false positives. The MLP had slightly lower balanced accuracy but better precision for SWS, which may be better for audio stimulation since false positives could trigger stimulation during non-SWS.
+Finally, I compared models and saved them:
+```python
+best_name = max(results, key=lambda k: results[k]["balanced_accuracy"])
+best_model = results[best_name]["model"]
+
+joblib.dump(results["logreg"]["model"], "sws_logreg.joblib")
+joblib.dump(results["mlp"]["model"], "sws_mlp.joblib")
+joblib.dump(results["rf"]["model"], "sws_rf.joblib")
+joblib.dump(best_model, "sws_x_model_best.joblib")
+```
+This gives me multiple model options for embedded implementation. Logistic regression is simpler, while MLP may be better for balancing precision/recall depending on how conservative we want stimulation triggering to be.
+
+
 **4/19 – Feature extraction + single-record validation**
 
 **Objective:** Implement and validate single-record x feature extraction from 30-second labeled EEG epochs for binary SWS classification.

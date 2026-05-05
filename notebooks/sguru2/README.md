@@ -5,9 +5,10 @@ References:
 3. “Cyton Data Format: Openbci Documentation.” OpenBCI Documentation RSS, 16 July 2025, docs.openbci.com/Cyton/CytonDataFormat/. 
 4. “Cyton Specs: Openbci Documentation.” OpenBCI Documentation RSS, 15 July 2025, docs.openbci.com/Cyton/CytonSpecs/. 
 5. Kemp, Bob. “Sleep-EDF Database Expanded.” PhysioNet, 24 Oct. 2013, physionet.org/content/sleep-edfx/1.0.0/. 
-6. Kemp, Bob. “Sleep-EDF Database.” PhysioNet, 12 Dec. 2002, www.physionet.org/content/sleep-edf/1.0.0/. 
-7. Shibboleth Authentication Request, www-sciencedirect-com.proxy2.library.illinois.edu/science/article/pii/S0896627313002304?via%3Dihub. Accessed 4 May 2026. 
-8. Su, Bo-Lin et al. “Detecting slow wave sleep using a single EEG signal channel.” Journal of neuroscience methods vol. 243 (2015): 47-52. doi:10.1016/j.jneumeth.2015.01.023
+6. Kemp, Bob. “Sleep-EDF Database.” PhysioNet, 12 Dec. 2002, www.physionet.org/content/sleep-edf/1.0.0/.
+7. Ngo, Hong-Viet V., et al. “Auditory Closed-Loop Stimulation of the Sleep Slow Oscillation Enhances Memory.” Neuron, vol. 78, no.3, 2013, pp. 545–553. ScienceDirect, https://doi.org/10.1016/j.neuron.2013.03.006.
+8. PAM8302A Document Number: Dsxxxxx Rev. 2 - 5 1 of 14 Www.Diodes.Com April 2013, cdn-shop.adafruit.com/datasheets/PAM8302A.pdf. Accessed 5 May 2026. 
+9. Su, Bo-Lin et al. “Detecting slow wave sleep using a single EEG signal channel.” Journal of neuroscience methods vol. 243 (2015): 47-52. doi:10.1016/j.jneumeth.2015.01.023
 ```
 
 **4/26 - Full system integration + requirement verification prep**

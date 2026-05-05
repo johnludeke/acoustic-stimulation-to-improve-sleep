@@ -110,7 +110,7 @@ float pSWS = predictSWSProbability(x1, x2, x3);
 ```
 One issue I ran into was that although the model was correctly predicting NSWS (expected since I was awake), the probability output pSWS was always exactly 0. This indicated something was off in the feature scaling rather than classification itself.
 Looking into the feature values, I noticed that the third feature (x3) was much larger than expected. The issue was that I was effectively feeding it in units of volts, while the model had been trained on microvolt-scale data. Since x3 involves an accumulated area term, this mismatch caused it to dominate the input and push the model output to extreme values.
-After correcting this scaling (bringing x3 into the same magnitude range as training), the model began outputting more reasonable probabilities, still predicting NSWS but now with non-zero pSWS values. This confirmed that both the feature extraction and model inference pipelines were working correctly and consistently with the offline implementation.
+After correcting this scaling (bringing x3 into the same magnitude range as training), the model began outputting more reasonable probabilities, still predicting NSWS but now with non-zero pSWS values as seen in Figure 19. This confirmed that both the feature extraction and model inference pipelines were working correctly and consistently with the offline implementation.
 Overall, this was the first fully integrated version of real-time EEG processing on the ESP32 that goes from raw Cyton packets all the way to SWS probability output, which is a key milestone for the closed-loop system.
 ￼
 <img width="374" height="343" alt="Screenshot 2026-05-04 at 9 50 45 PM" src="https://github.com/user-attachments/assets/fff4117b-9739-49b2-becd-1527e3cf0440" />
@@ -802,7 +802,7 @@ Goal of this stage:
 
 1) Frequency validation via FFT Magnitude Plot
 Before implementing the embedded version, I first verified that the SWS epoch actually contains energy in the slow-wave band.
-Computed FFT magnitude spectrum of a 30s SWS epoch and saw:
+Computed FFT magnitude spectrum of a 30s SWS epoch, seen in Figure 17, and saw:
 * Large DC component at 0 Hz (expected from baseline offset)
 * Clear dominant peak around ~1.2 Hz, which is inside the 0.5-4 Hz SWS range
 
@@ -1265,12 +1265,12 @@ This was important because it means I should not blindly cut the full EEG record
 
 John messaged this morning saying the audio PCB we ordered out of pocket was stolen from the package room. We will wait a few days and put notices up in his apartment complex - if that’s to no avail, we’ll have no choice but to reorder. 
 
-Worked with Bakry to clarify the full pipeline for feature extraction, SWS prediction, and phase-aligned audio stimulation. We converged on the architecture shown in the figure.
+Worked with Bakry to clarify the full pipeline for feature extraction, SWS prediction, and phase-aligned audio stimulation. We converged on the architecture shown in Figure 16.
 
 <img width="735" height="581" alt="Screenshot 2026-05-04 at 9 00 44 PM" src="https://github.com/user-attachments/assets/1321fa72-04ad-43ec-b64c-94c8ab581157" />
 Figure 16. Diagram of Clarified Pipeline for Feature Extraction, SWS Detection, and Phase-Aligned Audio Stimulation
 ￼
-The key idea builds directly off our progress demo. Previously, the audio subsystem took a known waveform generator (e.g., 0.5–2 Hz) and output phase-aligned pink noise. Here, we replace that synthetic input with a data-driven waveform derived from EEG, specifically from a rolling 30 s epoch updated every second.
+The key idea builds directly off our progress demo. Previously, the audio subsystem took a known waveform generator (e.g., 0.5–2 Hz) and output phase-aligned pink noise. Here, we replace that synthetic input with a data-driven waveform derived from EEG, specifically from a rolling 30 s epoch updated every second. The importance of phase-aligned audio stimulation - the whole peak predicition algorithm - is for enhancing the oscillations from slow waves and continuing them, as discussed in research per source [7].
 Pipeline:
 * Continue current feature extraction + SWS classification (Alg. 1) on 30 s windows
 * If classified as SWS → trigger Alg. 2
@@ -1412,7 +1412,7 @@ We finalized the design and placed the PCB order out of pocket to avoid delays. 
 
 **Objective:** Finalize audio subsystem PCB design and prepare for fabrication.
 
-I reviewed the audio subsystem portion of the PCB in detail, focusing on both the signal path and power design. Compared to earlier iterations, the design was simplified by using a single 3.3V rail instead of multiple voltage domains. This reduces complexity in routing and avoids unnecessary regulation stages, which is fine since both the DAC (MCP4822) and amplifier (PAM8302) can operate cleanly within this supply range.
+I reviewed the audio subsystem portion of the PCB in detail, focusing on both the signal path and power design. Compared to earlier iterations, the design was simplified by using a single 3.3V rail instead of multiple voltage domains. This reduces complexity in routing and avoids unnecessary regulation stages, which is fine since both the DAC (MCP4822) and amplifier (PAM8302) can operate cleanly within this supply range. The final schematic is seen in Figure 15.
 
 <img width="491" height="380" alt="Screenshot 2026-05-04 at 8 41 05 PM" src="https://github.com/user-attachments/assets/e29b4162-5a05-40d6-9622-3f837a702d00" />
 Figure 15. Schematic for PCB with Audio and Power Subsystems

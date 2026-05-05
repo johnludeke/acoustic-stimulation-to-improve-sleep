@@ -159,6 +159,7 @@ This session set the foundation for moving from a conceptual proposal to a concr
 
 
 **2/12 – Proposal refinement + system architecture**
+
 **Objective:** Refine design section of proposal and define system-level architecture.
 
 I updated the design section of the proposal to be more specific about the signal processing system, particularly how analog EEG signals are acquired, processed, and converted into digital data.

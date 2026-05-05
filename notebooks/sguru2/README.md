@@ -1,4 +1,147 @@
-**4/18 – Epoch / label alignment + annotation sanity checks**
+
+4/19 – Feature extraction + single-record validation
+Objective: Implement and validate single-record x feature extraction from 30-second labeled EEG epochs for binary SWS classification.
+
+Implemented the feature extraction portion of python-SWS-prediction.ipynb. First, I set up imports for EDF handling, signal processing, model training, and model saving:
+```python
+from pathlib import Path
+from collections import Counter
+
+import joblib
+import mne
+import numpy as np
+
+from sklearn.model_selection import GroupShuffleSplit
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import balanced_accuracy_score, classification_report, confusion_matrix
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neural_network import MLPClassifier
+```
+Then I wrote helper functions for the zero-crossing point features. The 30-second epoch is split into 1-second intervals, each interval is zero-meaned, and zero-crossing segments are extracted.
+```python
+def zero_mean_interval(sig_1s):
+    return sig_1s - np.mean(sig_1s)
+
+def get_zero_crossing_indices(sig):
+    signs = np.sign(sig).astype(float)
+
+    for i in range(len(signs)):
+        if signs[i] == 0:
+            signs[i] = 1 if i == 0 else signs[i - 1]
+
+    return np.where(np.diff(signs) != 0)[0]
+```
+Main feature extraction:
+```python
+def compute_x_features(epoch, sfreq):
+    samples_per_sec = int(sfreq)
+    assert len(epoch) == 30 * samples_per_sec, "Expected a 30-second epoch"
+
+    all_segment_lengths = []
+    x3_total = 0.0
+
+    for sec in range(30):
+        start = sec * samples_per_sec
+        end = (sec + 1) * samples_per_sec
+        seg_1s = zero_mean_interval(epoch[start:end])
+
+        zc = get_zero_crossing_indices(seg_1s)
+
+        if len(zc) < 2:
+            continue
+
+        for i in range(len(zc) - 1):
+            e_i = zc[i]
+            e_ip1 = zc[i + 1]
+
+            seg_len_sec = (e_ip1 - e_i) / sfreq
+            all_segment_lengths.append(seg_len_sec)
+
+            area = np.sum(np.abs(seg_1s[e_i:e_ip1])) / sfreq
+            x3_total += seg_len_sec * area
+
+    if len(all_segment_lengths) == 0:
+        return np.array([np.nan, np.nan, np.nan], dtype=float)
+
+    return np.array([
+        np.mean(all_segment_lengths),
+        np.std(all_segment_lengths),
+        x3_total
+    ], dtype=float)
+```
+I mapped the labels into the binary classification problem:
+```python
+VALID_LABEL_MAP = {
+    "Sleep stage W": 0,
+    "Sleep stage 1": 0,
+    "Sleep stage 2": 0,
+    "Sleep stage 3": 1,
+    "Sleep stage 4": 1,
+    "Sleep stage R": 0,
+}
+```
+Then I wrote utilities to match PSG files with hypnogram files and choose the EEG channel:
+```python
+def pairing_key(filename: str) -> str:
+    return filename[:7]
+
+def match_sleep_edf_pairs(root_dir):
+    root_dir = Path(root_dir)
+    psg_files = sorted(root_dir.glob("*-PSG.edf"))
+    hyp_files = sorted(root_dir.glob("*-Hypnogram.edf"))
+
+    hyp_by_key = {pairing_key(hyp.name): hyp for hyp in hyp_files}
+
+    pairs = []
+    for psg in psg_files:
+        key = pairing_key(psg.name)
+        hyp = hyp_by_key.get(key)
+        if hyp is not None:
+            pairs.append((psg, hyp, key))
+
+    return pairs
+
+def pick_eeg_channel(raw):
+    preferred = ["EEG Fpz-Cz", "EEG Pz-Oz", "Fpz-Cz", "Pz-Oz"]
+    for want in preferred:
+        if want in raw.ch_names:
+            return want
+    raise ValueError("No EEG channel found")
+```
+The main record-reading function attaches annotations, expands them into 30-second events, extracts EEG epochs, computes features, and assigns labels:
+```python
+events, event_id = mne.events_from_annotations(
+    raw,
+    event_id=ANNOTATION_DESC_2_EVENT_ID,
+    chunk_duration=30.0,
+    verbose=False,
+)
+
+epochs = mne.Epochs(
+    raw.copy().pick([chosen]),
+    events=events,
+    event_id=event_id,
+    tmin=0.0,
+    tmax=30.0 - 1.0 / sfreq,
+    baseline=None,
+    preload=True,
+    verbose=False,
+)
+```
+Single-record validation confirmed the pipeline worked:
+```markdown
+Chosen EEG channel: EEG Fpz-Cz
+Sampling rate: 100
+X_one shape: (1092, 3)
+y_one shape: (1092,)
+Class counts: NSWS=956, SWS=136
+```
+One hiccup was that MNE gave warnings about channels having different highpass/lowpass filters. 
+Since I explicitly selected one EEG channel before feature extraction, this did not block the model pipeline.
+
+**4/18 - Epoch / label alignment checks**
 
 **Objective:** Verify that Sleep-EDF Expanded hypnogram annotations correctly align with PSG EEG data before building the supervised training pipeline.
 
@@ -35,6 +178,57 @@ Labeled 30s epochs: 944
 Difference: -81
 ```
 This was important because it means I should not blindly cut the full EEG recording into 30-second windows. Only annotation-backed epochs should be used for supervised training.
+
+**4/17 - SWS Prediction + Phase-aligned Stimulation Algorithms Clarification**
+
+**Objective:** Clarify the full two-algorithm pipeline for SWS prediction and phase-aligned stimulation, and decide how to connect feature-based SWS classification with trough-based peak prediction.
+
+John messaged this morning saying the audio PCB we ordered out of pocket was stolen from the package room. We will wait a few days and put notices up in his apartment complex - if that’s to no avail, we’ll have no choice but to reorder. 
+
+Worked with Bakry to clarify the full pipeline for feature extraction, SWS prediction, and phase-aligned audio stimulation. We converged on the architecture shown in the figure.
+
+<img width="735" height="581" alt="Screenshot 2026-05-04 at 9 00 44 PM" src="https://github.com/user-attachments/assets/1321fa72-04ad-43ec-b64c-94c8ab581157" />
+Figure 16. Diagram of Clarified Pipeline for Feature Extraction, SWS Detection, and Phase-Aligned Audio Stimulation
+￼
+The key idea builds directly off our progress demo. Previously, the audio subsystem took a known waveform generator (e.g., 0.5–2 Hz) and output phase-aligned pink noise. Here, we replace that synthetic input with a data-driven waveform derived from EEG, specifically from a rolling 30 s epoch updated every second.
+Pipeline:
+* Continue current feature extraction + SWS classification (Alg. 1) on 30 s windows
+* If classified as SWS → trigger Alg. 2
+* Alg. 2:
+    * Bandpass EEG (0.5–4 Hz)
+    * Compute dominant slow-wave frequency via autocorrelation (best lag)
+    * Detect troughs in real time (threshold-based)
+    * Predict next peak at T/2 after trough
+    * Trigger audio at predicted peak
+This keeps the system identical to demo behavior, just replacing the input source with real EEG instead of a synthetic oscillator.
+Division of work:
+* I will continue refining feature extraction + SWS prediction (based on single-channel approach  )
+* Bakry will focus on Alg. 2, including whether simply verifying dominant frequency ∈ [0.5, 4] Hz is sufficient for SWS gating vs. full classifier dependency
+
+
+Dataset issues + switch to Sleep-EDF Expanded:
+Before moving to model development, I tested for epoch-label on the original Sleep-EDF dataset and ran into a major issue: sleep stage labels were not being parsed correctly. The original dataset used .rec files for the EEG and .hyp files for the corresponding sleep stage labels, while the expanded dataset used more modern .edf files for both. Also, the original dataset only had 7 patients overnight EEG data, while the expanded dataset had 44 patients’ overnight EEG data and corresponding labels, providing significantly more training data. 
+
+Using:
+```python
+raw = mne.io.read_raw_edf(psg_path, preload=False, verbose=False)
+annot = mne.read_annotations(hyp_path)
+```
+
+Original dataset (PSG + .hyp):
+* Channels: ['Fpz-Cz', 'Pz-Oz', 'horizontal', 'oro-nasal', 'Submental', 'body', 'Event marker']
+* sfreq: 100 Hz
+* Annotations: 0 detected
+* Unique descriptions: []
+→ .hyp files were not properly attaching annotations to EEG → unusable for supervised training
+Sleep-EDF Expanded:
+* Channels: ['EEG Fpz-Cz', 'EEG Pz-Oz', 'EOG horizontal', 'EMG submental', 'Marker']
+* sfreq: 100 Hz
+* Annotations: 148 segments detected
+* Includes valid labels:
+    * Wake (W), Stage 1, Stage 2, Stage 3, Stage 4
+The expanded dataset is thus fully compatible with MNE annotation pipeline, usable for epoching + labeling.
+Basically, today I switched to Sleep-EDF Expanded because it provides properly formatted EDF + annotation pairs. This is critical since the entire SWS pipeline depends on 30 s labeled epochs for supervised learning
 
 
 **4/14 - Real-time x feature extraction on ESP32 + design decision on PCB direction**

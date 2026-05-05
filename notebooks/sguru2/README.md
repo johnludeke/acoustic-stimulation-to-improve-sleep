@@ -1287,7 +1287,7 @@ Division of work:
 
 
 Dataset issues + switch to Sleep-EDF Expanded:
-Before moving to model development, I tested for epoch-label on the original Sleep-EDF dataset and ran into a major issue: sleep stage labels were not being parsed correctly. The original dataset used .rec files for the EEG and .hyp files for the corresponding sleep stage labels, while the expanded dataset used more modern .edf files for both. Also, the original dataset only had 7 patients overnight EEG data, while the expanded dataset had 44 patients’ overnight EEG data and corresponding labels, providing significantly more training data. 
+Before moving to model development, I tested for epoch-label on the original Sleep-EDF dataset and ran into a major issue: sleep stage labels were not being parsed correctly. The original dataset used .rec files for the EEG and .hyp files for the corresponding sleep stage labels, while the expanded dataset used more modern .edf files for both [5]. Also, the original dataset only had 7 patients overnight EEG data, while the expanded dataset had 44 patients’ overnight EEG data and corresponding labels, providing significantly more training data. 
 
 Using:
 ```python
@@ -1567,11 +1567,11 @@ Across the whole 30 seconds, the code builds up a list of segment lengths for x1
 
 **Objective:** Understand and implement the single-channel zero-crossing-point-based (x) feature vector
 
-I focused on understanding and implementing a single-channel EEG-based slow-wave sleep (SWS) detection algorithm from literature(cite). The goal was to translate an existing research method into something lightweight enough to eventually run on embedded hardware.
+I focused on understanding and implementing a single-channel EEG-based slow-wave sleep (SWS) detection algorithm from literature [8]. The goal was to translate an existing research method into something lightweight enough to eventually run on embedded hardware.
 
 The core idea of the paper is that SWS can be identified using time-domain characteristics of the EEG signal, rather than relying on frequency-domain features or multiple channels. In particular, slow-wave sleep is associated with high-amplitude, low-frequency oscillations, which can be captured by analyzing zero-crossing behavior of the signal stemming from the central/frontal brain region.
 
-To prototype this, I used the Sleep-EDF dataset(cite), which provides sleep stage labeled EEG recordings for each adjacent 30-second epoch. I implemented a preprocessing pipeline that mirrors the paper: bandpass filtering (0.3–35 Hz), segmentation into epochs, subtracting the mean of each epoch to remove DC offset and computing zero-crossing points (ZCPs), defined as locations where the signal changes sign.
+To prototype this, I used the Sleep-EDF dataset [6], which provides sleep stage labeled EEG recordings for each adjacent 30-second epoch. I implemented a preprocessing pipeline that mirrors the paper: bandpass filtering (0.3–35 Hz), segmentation into epochs, subtracting the mean of each epoch to remove DC offset and computing zero-crossing points (ZCPs), defined as locations where the signal changes sign.
 
 From these zero-crossing points, the signal is divided into segments. These segments encode important temporal information about the waveform. Faster signals produce many short segments, while slower oscillations produce fewer, longer segments. This becomes particularly useful for SWS detection, since slow waves naturally lead to longer segment durations (slower oscillations).
 
@@ -1723,13 +1723,13 @@ We also finalized key components across subsystems, including:
 
 **Objective:** Finalize component selection and define verification strategy for the system.
 
-We updated the design document by reviewing all components, ensuring availability, compatibility, and delivery timelines. This led to finalizing the full subsystem/component breakdown (headband, ADS1299, PIC32, BLE module, DAC, amplifier, etc.), which establishes a clear hardware architecture for the project.
+We updated the design document by reviewing all components, ensuring availability, compatibility, and delivery timelines. This led to finalizing the full subsystem/component breakdown (headband, ADS1299, PIC32, BLE module, DAC, amplifier, etc.), which establishes a clear hardware architecture for the project. A full list of components ordered can be seen in Table 1. 
 
 Table 1. Components Ordered
 <img width="561" height="415" alt="Screenshot 2026-05-04 at 7 46 09 PM" src="https://github.com/user-attachments/assets/ac7ac9c7-6da4-4c8f-a34f-71ec74fe6f3b" />
 
 
-I also worked on defining testing procedures, focusing on the signal processing subsystem. One key requirement from the Sound Asleep reference is that artifact-contaminated data must be less than 10% over long recordings. OpenBCI identifies artifacts using ADC saturation, which occurs when the analog signal exceeds the ADC’s measurable range and clips.
+I also worked on defining testing procedures, focusing on the signal processing subsystem. One key requirement from the Sound Asleep reference is that artifact-contaminated data must be less than 10% over long recordings. OpenBCI identifies artifacts using ADC saturation, which occurs when the analog signal exceeds the ADC’s measurable range and clips [4].
 
 Based on this, I proposed measuring the fraction of time where samples are saturated:
 
@@ -1744,7 +1744,7 @@ Additionally, I added a requirement to verify the accuracy of our SWS detection 
 
 I continued working on the design document, focusing specifically on the signal processing subsystem. One key idea we explored was simplifying the system to use only a single EEG channel for SWS detection. Since ADS1299 supports up to 8 channels, this significantly reduces complexity in routing, power consumption, and processing requirements.
 
-I also researched existing DIY EEG projects and found one that uses a single-channel design, which reinforced that this approach is practical for our use case.
+I also researched existing DIY EEG projects and found one that uses a single-channel design, which reinforced that this approach is practical for our use case [2].
 
 To better understand implementation, I studied the ADS1299 datasheet in detail, focusing on:
 
@@ -1753,7 +1753,7 @@ To better understand implementation, I studied the ADS1299 datasheet in detail, 
 * Programmable gain amplifiers
 * Reference and biasing requirements
 ￼
-This helped clarify how signals flow through the chip and informed later schematic decisions.
+This helped clarify how signals flow through the chip and informed later schematic decisions. Figure 2 greatly assisted with a visual understanding.
 
 <img width="605" height="502" alt="Screenshot 2026-05-04 at 7 40 36 PM" src="https://github.com/user-attachments/assets/e18fdf6b-f6a5-4bf8-b2c7-024b5a8d09c7" />
 Figure 2. ADS1299 Analog Front-End Functional Block Diagram
@@ -1776,7 +1776,7 @@ This session set the foundation for moving from a conceptual proposal to a concr
 
 I updated the design section of the proposal to be more specific about the signal processing system, particularly how analog EEG signals are acquired, processed, and converted into digital data.
 
-I also researched communication protocols used between components, including SPI (for ADS1299 to MCU) and wireless communication (BLE). This informed both the written design and the system block diagram.
+I also researched communication protocols used between components, including SPI (for ADS1299 to MCU) and wireless communication (BLE). This informed both the written design and the system block diagram, as seen in Figure 1. 
 ￼<img width="573" height="499" alt="Screenshot 2026-05-04 at 7 38 29 PM" src="https://github.com/user-attachments/assets/2d54790e-96fd-4a6c-80cb-7f3fb7e3171d" />
 Figure 1. Block Diagram
 

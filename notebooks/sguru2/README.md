@@ -1,5 +1,310 @@
 
 
+**4/22 - Real-time trough detection + peak prediction (LSL streaming)**
+
+**Objective:** Convert the phase-aligned stimulation algorithm into a real-time LSL streaming prototype to verify live trough detection and peak prediction.
+
+Got feedback from TA during progress demo on the previous work (4/21). Main question was how do we know this trough detection and peak prediction actually works in real time, since what I showed was a static plot over a full epoch. That pushed me to implement a real-time version of Alg. 2 using live EEG data.
+Updated the pipeline to run on an LSL stream from the OpenBCI GUI and visualize everything as the data comes in.
+Goals for this version:
+* Stream EEG data in real time from OpenBCI (via LSL)
+* Apply causal bandpass filtering (0.5–4 Hz) online
+* Detect troughs in real time using thresholds
+* Maintain a rolling 30-second buffer to estimate dominant frequency
+* Predict peaks at T/2 after each detected trough
+* Plot everything continuously so timing is visible
+
+
+1) Connecting to LSL stream
+First step was connecting to the OpenBCI LSL stream:
+```python
+streams = resolve_byprop("name", STREAM_NAME, timeout=10)
+inlet = StreamInlet(streams[0])
+info = inlet.info()
+fs = int(info.nominal_srate()) if info.nominal_srate() > 0 else FS_TARGET
+```
+This pulls real-time EEG samples from the GUI. I used channel index 0 (first EEG channel), and nominal sampling rate is typically 250 Hz.
+
+
+3) Causal bandpass filtering in real time
+Used a Butterworth bandpass, but applied causally using lfilter (not filtfilt):
+```python
+def make_bandpass(fs, low=0.5, high=4.0, order=4):
+    b, a = butter(order, [low, high], btype="bandpass", fs=fs)
+    zi = lfilter_zi(b, a) * 0.0
+    return b, a, zi
+```
+Then applied per chunk:
+```python
+y_chunk, zi = lfilter(b, a, raw_chunk, zi=zi)
+```
+
+
+3) Rolling 30-second buffer for frequency estimation
+Maintained a rolling buffer using deque:
+```python
+epoch_len = int(EPOCH_SEC * fs)
+filt_buf = deque(maxlen=epoch_len)
+time_buf = deque(maxlen=epoch_len)
+```
+This always holds the most recent 30 seconds of filtered EEG.
+Every 1 second, I recompute dominant frequency using autocorrelation:
+```python
+if len(filt_buf) >= epoch_len and (now - last_freq_update) >= FREQ_UPDATE_SEC:
+    dom_freq, period = estimate_dominant_freq_autocorr(
+        np.asarray(filt_buf),
+        fs,
+        low=BAND_LOW,
+        high=BAND_HIGH
+    )
+```
+So instead of one static SWS epoch, the system continuously updates its estimate based on the last 30 seconds.
+
+
+4) Real-time trough detection
+Implemented streaming trough detection using a 3-point check:
+```python
+def detect_new_trough(y_prev2, y_prev1, y_curr, sample_idx, fs, last_trough_idx):
+    trough_idx = sample_idx - 1
+
+    if not (y_prev1 < y_prev2 and y_prev1 < y_curr):
+        return None
+
+    min_dist = int(MIN_TROUGH_DISTANCE_SEC * fs)
+    if last_trough_idx is not None and (trough_idx - last_trough_idx) < min_dist:
+        return None
+
+    if y_prev1 > -MIN_TROUGH_PROM_UV:
+        return None
+
+    return trough_idx, y_prev1
+```
+Tuned thresholds based on real data:
+* Initial: 
+    * threshold = -20 µV
+    * min distance = 0.3 s → too sensitive, detected too many troughs
+* Final:
+    * threshold = -25 µV
+    * min distance = 0.7 s
+
+This gave much cleaner slow-wave trough detection.
+Important detail:
+* Trough is only confirmed when signal starts increasing again (local minimum), so detection is causal.
+
+
+5) Peak prediction using T/2 delay
+Once a trough is detected and period is known:
+```python
+pred_time = trough_time + period / 2.0
+```
+Stored predictions:
+```python
+pred_peak_times.append(pred_time)
+pred_peak_vals.append(abs(trough_val))
+```
+This mirrors the exact stimulation logic:
+* Detect trough in real time
+* Use current 30s frequency estimate
+* Schedule stimulation at trough + T/2
+
+
+6) Real-time plotting
+Plot updates every ~80 ms:
+```python
+if (now - last_plot_update) >= PLOT_UPDATE_SEC:
+```
+What is shown:
+* Bandpass filtered EEG (last 30 s)
+* Detected troughs (inverted triangle markers)
+* Predicted peaks (future markers)
+* Future window (~3 s ahead) so predicted peaks are visible
+Also added status text:
+```python
+status_text.set_text(
+    f"30s buffer: {fill_pct:.0f}% full\n"
+    f"Dominant freq: {freq_text}\n"
+    f"Period T: {period_text}\n"
+    f"Troughs: {len(trough_times)}"
+)
+```
+<img width="836" height="460" alt="Screenshot 2026-05-04 at 9 36 41 PM" src="https://github.com/user-attachments/assets/fa80c3b1-ce1b-4db0-bd88-720d8bf56304" />
+Figure 18. Image of Real-Time plot for Trough Detection and Peak Estimation
+
+Figure 18, which is a static picture but actually updates in real-time, proves the trough detection + peak prediction working as expected. Towards the right end, no troughs are detected since the signal doesn’t dip below -25 µV.
+
+Overall takeaway
+This addresses the TA’s concern directly. Instead of showing post-processed results, the system now:
+* Streams EEG in real time
+* Updates dominant frequency every second using a rolling 30s buffer
+* Detects troughs causally as samples arrive
+* Predicts peaks immediately after trough detection
+So now the full pipeline is actually happening online:
+* Continuous EEG stream
+* Rolling frequency estimation
+* Real-time trough detection
+* Immediate peak prediction for stimulation timing
+  
+**4/21 Alg. 2 development (frequency estimation + phase-aligned stimulation)**
+
+**Objective:** Develop an embedded-compatible phase-aligned stimulation algorithm using causal filtering, autocorrelation-based frequency estimation, trough detection, and peak prediction.
+
+Took over development of Alg. 2 (phase-aligned stimulation) and updated python_SWS_prediction.ipynb to include signal processing visuals and an embedded-style implementation.
+Goal of this stage:
+* Given an SWS-detected epoch, estimate dominant slow-wave frequency
+* Use that to:
+    * Detect troughs in the next epoch
+    * Predict peaks (T/2 later), which is where audio stimulation happens
+
+
+1) Frequency validation via FFT Magnitude Plot
+Before implementing the embedded version, I first verified that the SWS epoch actually contains energy in the slow-wave band.
+Computed FFT magnitude spectrum of a 30s SWS epoch and saw:
+* Large DC component at 0 Hz (expected from baseline offset)
+* Clear dominant peak around ~1.2 Hz, which is inside the 0.5-4 Hz SWS range
+
+<img width="747" height="241" alt="Screenshot 2026-05-04 at 9 28 33 PM" src="https://github.com/user-attachments/assets/a86585a3-d24c-41a5-8133-48249c4a8ee1" />
+Figure 17. FFT Magnitude Spectrum of SWS-Classified Epoch from Sleep-EDF Dataset
+
+
+￼
+This confirms that:
+* The dataset labeling is reasonable
+* The signal actually contains slow-wave activity we can track
+
+
+Why not use FFT for embedded frequency estimation?
+FFT works well offline, but not ideal for embedded:
+* Complexity:
+    * FFT over 30s epoch (~3000 samples) requires ~3000·log₂(3000) ≈ 3.5×10⁴ operations ~ O(N log N)
+    * Naive autocorrelation over 0.25-2s lags requires ~3000×175 ≈ 5.25×10⁵ operations but can be reduced via lag constraints and downsampling, giving ~O(N)
+* Memory:
+    * Requires full buffer and complex-valued arrays
+* Latency:
+    * Need the full 30s window before computing anything
+
+Because of this, I switched to a time-domain method using autocorrelation:
+* Lower overhead in practice with constrained lag search
+* Easier to implement on MCU
+* Directly gives period, which is what we need for stimulation timing
+
+
+2) Embedded-style bandpass filtering (0.5-4 Hz)
+Instead of using scipy.signal.butter + filtfilt (non-causal), I implemented a causal IIR bandpass using biquads:
+```python
+def bandpass_0p5_4hz_causal(samples, fs):
+    hp = make_highpass(0.5, fs)
+    lp = make_lowpass(4.0, fs)
+    out = []
+    for x in samples:
+        y = hp.process(float(x))
+        y = lp.process(y)
+        out.append(y)
+    return out
+```
+Key points:
+* Fully causal, no future samples used
+* Matches what we would actually run on MCU
+* Avoids filtfilt (scipy) which is not deployable
+
+
+3) Dominant frequency via autocorrelation (time-domain)
+Instead of FFT, estimate frequency by finding the lag that maximizes similarity between the signal and a delayed version of itself.
+Search over lags:
+* 0.25 to 2.0 seconds, which corresponds to 4 to 0.5 Hz
+Core computation:
+```python
+def autocorr_at_lag(samples, lag_samples):
+    numerator = 0.0
+    energy_a = 0.0
+    energy_b = 0.0
+    for i in range(len(samples) - lag_samples):
+        a = samples[i]
+        b = samples[i + lag_samples]
+        numerator += a * b
+        energy_a += a * a
+        energy_b += b * b
+    denom = math.sqrt(energy_a * energy_b)
+    if denom <= 1e-12:
+        return 0.0
+    return numerator / denom
+```
+Then sweep lags:
+```python
+dominant_freq, dominant_period, best_corr, lags, corrs = estimate_dominant_frequency_autocorr(
+    bp_sws_for_ac,
+    fs=FS,
+    min_lag_sec=0.25,
+    max_lag_sec=2.0
+)
+```
+Result:
+```markdown
+Estimated dominant frequency: 1.250 Hz
+Estimated period: 0.800 s
+```
+Matches the FFT result (~1.2 Hz), so the method checks out.
+
+4) Trough detection (next epoch)
+Once frequency is known, move to the next epoch and detect troughs.
+Manual detection (no scipy.find_peaks):
+```python
+def detect_troughs(samples, fs, min_distance_sec, threshold):
+    troughs = []
+    last_trough = -10**9
+    for i in range(1, len(samples) - 1):
+        is_local_min = samples[i] < samples[i - 1] and samples[i] <= samples[i + 1]
+        far_enough = (i - last_trough) >= int(min_distance_sec * fs)
+        deep_enough = samples[i] < -threshold
+        if is_local_min and far_enough and deep_enough:
+            troughs.append(i)
+            last_trough = i
+    return troughs
+```
+Threshold:
+```python
+trough_threshold = 0.5 * std_list(bp_next)
+```
+
+6) Peak prediction (phase-aligned stimulation)
+Key idea: The peak of a sinusoid occurs about T/2 after the trough
+```python
+half_period_samples = int((dominant_period / 2.0) * FS)
+
+predicted_peak_samples = []
+for tr in troughs:
+    pred = tr + half_period_samples
+    if pred < len(bp_next):
+        predicted_peak_samples.append(pred)
+```
+
+Results (next epoch)
+```markdown
+Detected troughs: 35
+Predicted stimulation peaks: 35
+Half-period delay: 0.400 s
+```
+Interpretation:
+* Slow-wave structure is consistent across the epoch
+* Frequency estimate is stable
+* Clean 1:1 mapping between troughs and predicted peaks
+
+
+Overall takeaway
+This completes an embedded-compatible version of Alg. 2:
+* No scipy (no filtfilt, no find_peaks)
+* No FFT dependency for runtime
+* Uses:
+    * Causal IIR filtering
+    * Autocorrelation for frequency
+    * Manual trough detection
+    * Deterministic peak prediction
+Pipeline now:
+SWS epoch: bandpass-> autocorrelation-> dominant frequency
+
+Then next following epoch (current data in general): bandpass-> trough detection ->add T/2-> stimulation timing
+This directly matches what we want running on the MCU for real-time closed-loop stimulation. One note is for real-time trough detection, since we can’t depend on future data, we’ll have to set some thresholds to determine what can be classified as a trough. 
+
+
 **4/20 - Full dataset build, model training, comparison, and saving**
 
 **Objective:** Build the full Sleep-EDF Expanded feature dataset, train multiple SWS classifiers, compare performance, and save models for embedded implementation.
@@ -129,7 +434,7 @@ joblib.dump(best_model, "sws_x_model_best.joblib")
 This gives me multiple model options for embedded implementation. Logistic regression is simpler, while MLP may be better for balancing precision/recall depending on how conservative we want stimulation triggering to be.
 
 
-**4/19 – Feature extraction + single-record validation**
+**4/19 - Feature extraction + single-record validation**
 
 **Objective:** Implement and validate single-record x feature extraction from 30-second labeled EEG epochs for binary SWS classification.
 

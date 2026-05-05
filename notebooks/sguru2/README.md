@@ -125,37 +125,58 @@ Overview -
 Updated design document - we looked over parts, ensuring their current support and delivery, and planned subsystem development.
 
 
-Monday - Feb 23
+**2/23 – Signal processing subsystem focus + ADS1299 study**
 
-Continued working on design document.
-I specifically looked into the signal processing subsystem. 
-We considered design simplifications from the OpenBCI Cyton Board based on our project, 
-such as an algorithm for detecting slow-wave sleep from one EEG channel.
-We theorize this would simplify the component connections and power necessary, 
-since the Analog Front End (ADS1299) can hold up to 8 input channels.
+**Objective:**
+ Understand ADS1299 operation and evaluate simplifying system to single-channel EEG.
 
-I studied the datasheet of the ADS1299 - the Analog Front End of the OpenBCI Cyton Board - to better understand
-its functionality and pins - electrode inputs, MUX, ADC converters, and programmable gain amplifiers. 
-<img width="644" height="508" alt="Screenshot 2026-02-27 at 5 17 36 PM" src="https://github.com/user-attachments/assets/e6181135-d0ff-42d5-b3ae-c6335f58c118" />
+I continued working on the design document, focusing specifically on the signal processing subsystem. One key idea we explored was simplifying the system to use only a single EEG channel for SWS detection. Since ADS1299 supports up to 8 channels, this significantly reduces complexity in routing, power consumption, and processing requirements.
+
+I also researched existing DIY EEG projects and found one that uses a single-channel design, which reinforced that this approach is practical for our use case.
+
+To better understand implementation, I studied the ADS1299 datasheet in detail, focusing on:
+
+* Electrode inputs and differential measurement
+* Internal MUX and ADC structure
+* Programmable gain amplifiers
+* Reference and biasing requirements
+￼
+This helped clarify how signals flow through the chip and informed later schematic decisions.
+
+<img width="605" height="502" alt="Screenshot 2026-05-04 at 7 40 36 PM" src="https://github.com/user-attachments/assets/e18fdf6b-f6a5-4bf8-b2c7-024b5a8d09c7" />
+Figure 2. ADS1299 Analog Front-End Functional Block Diagram
 
 
+**2/18 – Initial research + team planning**
+
+**Objective:** Establish project direction and begin refining design from proposal.
+
+We reviewed existing OpenBCI-based projects and discussed how they structure EEG acquisition systems. At the same time, we finalized team roles, responsibilities, and workflow through the team contract.
+
+I began iterating on the design document based on TA feedback, focusing on the signal processing subsystem. This involved looking more closely at the components we initially proposed and verifying that they were appropriate and available.
+
+This session set the foundation for moving from a conceptual proposal to a concrete system design.
 
 
-Wed - Feb 18
+**2/12 – Proposal refinement + system architecture**
+**Objective:** Refine design section of proposal and define system-level architecture.
 
-Research into existing openBCI-based projects and planning with team for team contract. Discussed roles, responsibilites, and procedures.
-for moving forward, finalized in the team contract. Began iterating on design document based on proposal since TA liked it. 
-Focused on the components we initially wrote about (I did signal processing subsystem) as well as looking closer into available components.
+I updated the design section of the proposal to be more specific about the signal processing system, particularly how analog EEG signals are acquired, processed, and converted into digital data.
+
+I also researched communication protocols used between components, including SPI (for ADS1299 to MCU) and wireless communication (BLE). This informed both the written design and the system block diagram.
+￼<img width="573" height="499" alt="Screenshot 2026-05-04 at 7 38 29 PM" src="https://github.com/user-attachments/assets/2d54790e-96fd-4a6c-80cb-7f3fb7e3171d" />
+Figure 1. Block Diagram
+
+At this stage, I was focused on clearly defining:
+
+* Analog front end (EEG acquisition)
+* Digital processing (microcontroller)
+* Communication (Bluetooth)
+* Output (audio stimulation)
+
+This work established the overall system pipeline that later guided both schematic and PCB development.
 
 
-Thu - Feb 12
-
-I updated the design section of our proposal - being more specific about the signal processing system's
-analog and digital functions. I researched more about the communication protocols used to transmit data
-between and within components. This was for both the design section as well as the block diagram
-I made below:
-
-<img width="645" height="504" alt="Screenshot 2026-02-27 at 5 09 30 PM" src="https://github.com/user-attachments/assets/7c01d72a-5c21-427e-98d7-4b048ce0466a" />
 
 
 

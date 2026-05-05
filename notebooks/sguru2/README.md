@@ -5,34 +5,60 @@
 **Objective:** Implement real-time x feature extraction from Cyton EEG data on ESP32 and evaluate whether to proceed with full PCB bring-up or current hybrid setup.
 On the software side, I extended the x feature extraction pipeline to run directly on the ESP32 using raw Cyton data streamed over UART. Unlike the earlier Python version, this required working with packetized data and integrating feature extraction into a continuous embedded loop.
 The pipeline starts with parsing Cyton packets and converting raw ADC counts into a usable signal:
+
 int32_t counts = int24ToInt32(pkt[base], pkt[base + 1], pkt[base + 2]);
+
 float uV = counts * scale_uV_per_count;
+
 float rawVolts = uV / 1000000.0f;
+
 This converts the 24-bit ADC output into microvolts and then into a voltage signal. Samples are pushed into a rolling buffer:
+
 ringBuffer[writeIndex] = filteredForMLP;
+
 writeIndex = (writeIndex + 1) % MODEL_SAMPLES_PER_EPOCH;
+
 This buffer represents a continuous 30-second window (updating every second). Once the buffer is filled, I reconstruct a contiguous epoch and compute the x features:
+
 getContiguousEpoch(epoch);
+
 computeXFeatures(epoch, MODEL_SFREQ, x1, x2, x3, valid);
+
 Inside computeXFeatures, the logic mirrors the Python implementation. The 30-second window is split into 1-second segments, each segment is zero-meaned, and zero-crossings are detected:
+
 for (int sec = 0; sec < EPOCH_SECONDS; sec++) {
+
   ...
+  
   seg[i] = epoch[start + i] - (float)mean;
+  
   ...
+  
   if (processedSigns[i + 1] != processedSigns[i]) {
+  
     zc[zcCount++] = i;
+	
   }
 }
 From these zero-crossings, segment lengths and areas are computed and accumulated:
+
 float segLenSec = float(e_ip1 - e_i) / float(sfreq);
+
 segLenSum += segLenSec;
+
 ...
 area += fabs(seg[k]);
+
 x3Total += double(segLenSec) * area;
+
 Finally, the three features are computed:
+
 x1 = float(segLenSum / segCount);
+
 x2 = float(sqrt(variance));
+
 x3 = float(x3Total);
+
 This produces the same feature vector as before with the python prototype (interfacing with the LSL stream generated from OpenBCI GUI), but now entirely in real time on the ESP32 using live EEG data directly from the intercepted bluetooth transmission. 
 
 Separately, we ran into an unexpected situation with hardware. We had not received confirmation from our TA about our round 3/4 PCBs being delivered, but when we checked the lab storage, we found that they had actually already arrived. This forced us to decide whether to pivot to assembling the full PCB or continue with our current Cyton + audio PCB setup.

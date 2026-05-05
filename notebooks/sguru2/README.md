@@ -1,3 +1,113 @@
+
+
+**4/14 - Real-time x feature extraction on ESP32 + design decision on PCB direction**
+
+**Objective:** Implement real-time x feature extraction from Cyton EEG data on ESP32 and evaluate whether to proceed with full PCB bring-up or current hybrid setup.
+On the software side, I extended the x feature extraction pipeline to run directly on the ESP32 using raw Cyton data streamed over UART. Unlike the earlier Python version, this required working with packetized data and integrating feature extraction into a continuous embedded loop.
+The pipeline starts with parsing Cyton packets and converting raw ADC counts into a usable signal:
+int32_t counts = int24ToInt32(pkt[base], pkt[base + 1], pkt[base + 2]);
+float uV = counts * scale_uV_per_count;
+float rawVolts = uV / 1000000.0f;
+This converts the 24-bit ADC output into microvolts and then into a voltage signal. Samples are pushed into a rolling buffer:
+ringBuffer[writeIndex] = filteredForMLP;
+writeIndex = (writeIndex + 1) % MODEL_SAMPLES_PER_EPOCH;
+This buffer represents a continuous 30-second window (updating every second). Once the buffer is filled, I reconstruct a contiguous epoch and compute the x features:
+getContiguousEpoch(epoch);
+computeXFeatures(epoch, MODEL_SFREQ, x1, x2, x3, valid);
+Inside computeXFeatures, the logic mirrors the Python implementation. The 30-second window is split into 1-second segments, each segment is zero-meaned, and zero-crossings are detected:
+for (int sec = 0; sec < EPOCH_SECONDS; sec++) {
+  ...
+  seg[i] = epoch[start + i] - (float)mean;
+  ...
+  if (processedSigns[i + 1] != processedSigns[i]) {
+    zc[zcCount++] = i;
+  }
+}
+From these zero-crossings, segment lengths and areas are computed and accumulated:
+float segLenSec = float(e_ip1 - e_i) / float(sfreq);
+segLenSum += segLenSec;
+...
+area += fabs(seg[k]);
+x3Total += double(segLenSec) * area;
+Finally, the three features are computed:
+x1 = float(segLenSum / segCount);
+x2 = float(sqrt(variance));
+x3 = float(x3Total);
+This produces the same feature vector as before with the python prototype (interfacing with the LSL stream generated from OpenBCI GUI), but now entirely in real time on the ESP32 using live EEG data directly from the intercepted bluetooth transmission. 
+
+Separately, we ran into an unexpected situation with hardware. We had not received confirmation from our TA about our round 3/4 PCBs being delivered, but when we checked the lab storage, we found that they had actually already arrived. This forced us to decide whether to pivot to assembling the full PCB or continue with our current Cyton + audio PCB setup.
+
+We evaluated both options:
+
+Option 1: Assemble full PCB (EEG + audio)
+
+* Pros:
+    * Fully integrated system
+    * Matches original design intent
+    * Good for demonstrating complete pipeline
+* Cons:
+    * Risky due to time constraints
+    * Complex soldering (ADS1299 especially)
+    * Debugging analog front end could take too long
+
+Option 2: Use Cyton + audio PCB (current approach)
+
+* Pros:
+    * Already validated EEG acquisition
+    * Faster to integrate with existing pipeline
+    * Lower risk for demo and verification
+    * Still meets core requirement of closed-loop stimulation
+* Cons:
+    * Not fully custom EEG hardware
+    * Less impressive from a PCB integration standpoint
+
+Given the timeline and course requirements (working system > fully custom hardware), we decided to move forward with the Cyton board for EEG acquisition and use our custom audio PCB for stimulation. This keeps the system reliable while still demonstrating all key functionality: real-time EEG digitization and phase-aligned audio stimulation.
+
+**4/10 - PCB ordered**
+
+**Objective:** Submit final PCB design for order.
+
+We finalized the design and placed the PCB order out of pocket to avoid delays. We chose to order with no stencil since we were confident in our soldering and it would reduce the cost. At this point, all schematic and layout checks (ERC/DRC) had been completed, and we were confident in the design. Ordering marked the transition from design to implementation, and the focus moving forward would shift toward bring-up and testing.
+
+
+**4/9 - Audio PCB design review + ordering logistics**
+
+**Objective:** Finalize audio subsystem PCB design and prepare for fabrication.
+
+I reviewed the audio subsystem portion of the PCB in detail, focusing on both the signal path and power design. Compared to earlier iterations, the design was simplified by using a single 3.3V rail instead of multiple voltage domains. This reduces complexity in routing and avoids unnecessary regulation stages, which is fine since both the DAC (MCP4822) and amplifier (PAM8302) can operate cleanly within this supply range.
+
+<img width="491" height="380" alt="Screenshot 2026-05-04 at 8 41 05 PM" src="https://github.com/user-attachments/assets/e29b4162-5a05-40d6-9622-3f837a702d00" />
+Figure 15. Schematic for PCB with Audio and Power Subsystems
+￼
+The signal chain is now clearly structured as:
+
+* MCU (SPI) -> DAC -> AC coupling capacitor -> audio amplifier -> speaker
+
+The addition of the coupling capacitor ensures the amplifier input is properly centered and prevents DC offset from propagating. Decoupling capacitors were also placed close to both the DAC and amplifier to stabilize the supply and reduce noise.
+
+After reviewing the layout, I worked with John to slightly spread out components, mainly to make soldering easier and reduce the chance of error during assembly. 
+
+We also verified that all parts were in stock and would arrive on time. At this point, we finalized PCB ordering options. John compiled pricing for different vendors:
+
+* With stencil:
+    * JLCPCB: $76.50
+    * PCBWay: $113.57
+* Without stencil:
+    * JLCPCB: $44.76
+    * PCBWay: $80.30
+
+This gave us flexibility depending on whether we wanted easier assembly (stencil) or lower cost.
+
+**4/6 - Audio subsystem iteration + timing behavior**
+
+**Objective:** Improve audio subsystem prototype and begin aligning stimulation timing with incoming signal behavior.
+
+I extended the breadboard setup for the audio subsystem to better visualize and debug timing behavior. I added an LED indicator that toggles with the waveform generator signal so we could directly see the frequency and timing of the incoming waveform. This made it much easier to reason about whether our stimulation logic was aligned with the signal or not.
+
+On the software side, I updated the audio stimulation logic so that the pink noise output is triggered in phase with the waveform. Specifically, the system now plays pink noise at a detected peak, then again at the next peak, followed by a delay of around 0.5 seconds before repeating. This helped us move closer to the intended behavior of phase-locked stimulation, where the audio is aligned with the oscillatory structure of the signal rather than just playing periodically.
+
+This was a good step toward validating the timing pipeline before integrating real EEG signals, since it let us test phase alignment in a controlled setting using a known waveform.
+
 **4/5 - Packet Parsing + Signal Validation**
 
 **Objective:** Parse Cyton data packets on the ESP32, reconstruct EEG signals, and validate signal integrity against the OpenBCI GUI to confirm a correct embedded data pipeline.

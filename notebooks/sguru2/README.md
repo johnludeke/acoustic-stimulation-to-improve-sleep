@@ -143,6 +143,7 @@ bool estimateDominantFreqAutocorr(float &freqHz, float &periodMs) {
 This is the embedded version of the autocorrelation logic from the notebook. It subtracts the mean, checks signal energy, searches lags corresponding to 0.5 to 4 Hz, and chooses the lag with the highest correlation. The best lag becomes the estimated period, and frequency is just 1 over period.
 This is what lets the device estimate the current slow-wave rhythm from the last 30 seconds, instead of using a fixed frequency.
 Trough detection
+```cpp
 bool detectTrough(float yCurr, int32_t &troughSample, float &troughVal) {
   if (!havePrev2 || !havePrev1) return false;
 
@@ -161,8 +162,10 @@ bool detectTrough(float yCurr, int32_t &troughSample, float &troughVal) {
   lastTroughSample = candidateSample;
   return true;
 }
+```
 This detects troughs causally. It only confirms a trough after the signal starts rising again, so the previous sample has to be lower than the sample before it and the current sample. I also added the minimum distance and amplitude threshold so it does not fire on tiny local minima.
 Main processing function
+```cpp
 void processChannel0Sample(float ch0_uV) {
   updateClockMappingIfNeeded();
 
@@ -243,9 +246,11 @@ void processChannel0Sample(float ch0_uV) {
 
   globalSampleIndex++;
 }
+```
 This is the main loop for one EEG sample. It filters the sample, stores it, updates the autocorrelation buffer, prints data for visualization, updates frequency once per second, detects troughs, predicts the next peak using half the estimated period, and schedules stimulation.
 This block is basically the full closed-loop logic in one place.
 Audio scheduling and stimulation
+```cpp
 void startNoiseBurst(uint32_t eventSampleMs) {
   audioActive = true;
   audioStopWallMs = millis() + NOISE_DURATION_MS;
@@ -264,8 +269,10 @@ void updateScheduledStim() {
     startNoiseBurst(scheduledPeakSampleMs);
   }
 }
+```
 Once a peak target is scheduled, this waits until the mapped wall-clock time and starts the pink noise burst. The STIM line confirms when the stimulation was triggered.
 Python serial visualizer
+```python
 def process_line(line):
     global latest_freq, latest_T
 
@@ -321,9 +328,10 @@ def process_line(line):
 
     except Exception:
         pass
+```
 The Python script reads the ESP32 serial output and stores each event type in its own buffer. DATA becomes the continuous waveform, TROUGH becomes detected trough markers, pred_t becomes predicted peak markers, and STIM becomes the actual audio stimulation marker.
 Example serial output:
-Running. Close plot window to stop.
+```markdown
 FREQ,30000,4.167,240.0
 TROUGH,30208,-167.532,30328
 STIM,30328
@@ -333,6 +341,7 @@ FREQ,31000,4.167,240.0
 FREQ,32000,3.333,300.0
 TROUGH,32416,-63.129,32566
 STIM,32566
+```
 This confirmed that the ESP32 was producing frequency updates, trough detections, predicted peaks, and real audio stimulation events.
 
 

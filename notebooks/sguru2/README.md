@@ -1,10 +1,11 @@
 References:
 ```markdown
-1. Can, Mustafa Melih. “Open-Source DIY EEG: Brainwaves on a Custom PCB.” Hackster.Io, 18 Sept. 2025, www.hackster.io/mustafamelihcan/open-source-diy-eeg-brainwaves-on-a-custom-pcb-99146e. 
-2. “Cyton Data Format: Openbci Documentation.” OpenBCI Documentation RSS, 16 July 2025, docs.openbci.com/Cyton/CytonDataFormat/. 
-3. “Cyton Specs: Openbci Documentation.” OpenBCI Documentation RSS, 15 July 2025, docs.openbci.com/Cyton/CytonSpecs/. 
-4. Shibboleth Authentication Request, www-sciencedirect-com.proxy2.library.illinois.edu/science/article/pii/S0896627313002304?via%3Dihub. Accessed 4 May 2026. 
-5. Su, Bo-Lin et al. “Detecting slow wave sleep using a single EEG signal channel.” Journal of neuroscience methods vol. 243 (2015): 47-52. doi:10.1016/j.jneumeth.2015.01.023
+1. “ADS1299.” ADS1299 Data Sheet, Product Information and Support | TI.Com, www.ti.com/product/ADS1299. Accessed 1 Apr. 2026. 
+2. Can, Mustafa Melih. “Open-Source DIY EEG: Brainwaves on a Custom PCB.” Hackster.Io, 18 Sept. 2025, www.hackster.io/mustafamelihcan/open-source-diy-eeg-brainwaves-on-a-custom-pcb-99146e. 
+3. “Cyton Data Format: Openbci Documentation.” OpenBCI Documentation RSS, 16 July 2025, docs.openbci.com/Cyton/CytonDataFormat/. 
+4. “Cyton Specs: Openbci Documentation.” OpenBCI Documentation RSS, 15 July 2025, docs.openbci.com/Cyton/CytonSpecs/. 
+5. Shibboleth Authentication Request, www-sciencedirect-com.proxy2.library.illinois.edu/science/article/pii/S0896627313002304?via%3Dihub. Accessed 4 May 2026. 
+6. Su, Bo-Lin et al. “Detecting slow wave sleep using a single EEG signal channel.” Journal of neuroscience methods vol. 243 (2015): 47-52. doi:10.1016/j.jneumeth.2015.01.023
 ```
 
 **4/26 - Full system integration + requirement verification prep**

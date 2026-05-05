@@ -812,9 +812,7 @@ Figure 17. FFT Magnitude Spectrum of SWS-Classified Epoch from Sleep-EDF Dataset
 
 
 ￼
-This confirms that:
-* The dataset labeling is reasonable
-* The signal actually contains slow-wave activity we can track
+This confirms that the dataset labeling is reasonable and the signal actually contains slow-wave activity we can track [9].
 
 
 Why not use FFT for embedded frequency estimation?
@@ -1226,7 +1224,7 @@ Since I explicitly selected one EEG channel before feature extraction, this did 
 
 **Objective:** Verify that Sleep-EDF Expanded hypnogram annotations correctly align with PSG EEG data before building the supervised training pipeline.
 
-Started by verifying that the Sleep-EDF Expanded hypnogram labels actually aligned with the PSG EEG data before building the model. Since the classifier operates on 30-second epochs, I first checked whether the annotations were stored as individual 30 s labels or longer segments.
+Started by verifying that the Sleep-EDF Expanded hypnogram labels actually aligned with the PSG EEG data before building the model. Since the classifier operates on 30-second epochs, I first checked whether the annotations were stored as individual 30 s labels or longer segments [5].
 ```python
 print("First 20 annotation descriptions:")
 print(list(annot.description[:20]))
@@ -1451,7 +1449,7 @@ This was a good step toward validating the timing pipeline before integrating re
 
 **Objective:** Parse Cyton data packets on the ESP32, reconstruct EEG signals, and validate signal integrity against the OpenBCI GUI to confirm a correct embedded data pipeline.
 
-With access to the raw bitstream, I moved on to parsing the incoming data according to the OpenBCI Cyton data format. Each packet begins with a header byte (0xA0) and ends with a footer byte (0xC followed by a counter), with a fixed number of bytes in between representing channel data and metadata.
+With access to the raw bitstream, I moved on to parsing the incoming data according to the OpenBCI Cyton data format. Each packet begins with a header byte (0xA0) and ends with a footer byte (0xC followed by a counter), with a fixed number of bytes in between representing channel data and metadata [3].
 
 To verify correct packet reception, I first implemented a simple parser that prints a new line whenever a valid header is detected and a corresponding footer appears at the expected offset. This resulted in consistently formatted packet outputs, with no unexpected bytes or misalignment. This step was important because it confirmed that there was no data corruption or packet loss at the UART level.
 
@@ -1568,15 +1566,15 @@ Across the whole 30 seconds, the code builds up a list of segment lengths for x1
 
 **Objective:** Understand and implement the single-channel zero-crossing-point-based (x) feature vector
 
-I focused on understanding and implementing a single-channel EEG-based slow-wave sleep (SWS) detection algorithm from literature [8]. The goal was to translate an existing research method into something lightweight enough to eventually run on embedded hardware.
+I focused on understanding and implementing a single-channel EEG-based slow-wave sleep (SWS) detection algorithm from literature [9]. The goal was to translate an existing research method into something lightweight enough to eventually run on embedded hardware.
 
 The core idea of the paper is that SWS can be identified using time-domain characteristics of the EEG signal, rather than relying on frequency-domain features or multiple channels. In particular, slow-wave sleep is associated with high-amplitude, low-frequency oscillations, which can be captured by analyzing zero-crossing behavior of the signal stemming from the central/frontal brain region.
 
 To prototype this, I used the Sleep-EDF dataset [6], which provides sleep stage labeled EEG recordings for each adjacent 30-second epoch. I implemented a preprocessing pipeline that mirrors the paper: bandpass filtering (0.3–35 Hz), segmentation into epochs, subtracting the mean of each epoch to remove DC offset and computing zero-crossing points (ZCPs), defined as locations where the signal changes sign.
 
-From these zero-crossing points, the signal is divided into segments. These segments encode important temporal information about the waveform. Faster signals produce many short segments, while slower oscillations produce fewer, longer segments. This becomes particularly useful for SWS detection, since slow waves naturally lead to longer segment durations (slower oscillations).
+From these zero-crossing points, the signal is divided into segments. These segments encode important temporal information about the waveform. Faster signals produce many short segments, while slower oscillations produce fewer, longer segments. This becomes particularly useful for SWS detection, since slow waves naturally lead to longer segment durations (slower oscillations) [9].
 
-From this representation, I computed the three primary features:
+From this representation, I computed the three primary features [9]:
 	•	x1: mean length of zero-crossing segments
 	•	x2: standard deviation of segment lengths
 	•	x3: weighted area under the signal between zero crossings
@@ -1604,7 +1602,7 @@ I fixed this by adding vias to tie top-layer DGND regions to a continuous bottom
 <img width="390" height="99" alt="Screenshot 2026-05-04 at 8 01 40 PM" src="https://github.com/user-attachments/assets/e829923e-9516-45cb-8f3c-b9466a30d35e" />
 Figure 8. Example of Fixing DGND connections from PIC32 pins
 
-Once these fixes were made, which John helped with some that I didn’t know how to address, we submitted this PCB for the fourth round pass.
+Once these fixes were made, which John helped with some that I didn’t know how to address, we submitted this PCB for the fourth round pass as seen in Figure 9.
 
 <img width="857" height="779" alt="Screenshot 2026-05-04 at 8 02 11 PM" src="https://github.com/user-attachments/assets/49d586a0-b6f6-49e1-a7f9-dbb8f62e895f" />
 Figure 9. PCB Submitted for Fourth Round Pass
@@ -1629,7 +1627,7 @@ At this point, I stepped back and questioned whether some of our routing decisio
 
 SRB2 is useful for multi-channel referencing, but for our single-channel design it is not strictly required in the same way, so over-routing it just adds complexity and potential noise pickup. This reinforced the idea that we should keep routing minimal and directly aligned with the single-channel SWS detection approach, which also helps reduce latency and PCB complexity.
 
-With our current PCB in order, I confirmed that it passed the audit on PCBway and submitted for the third round pass. However, I soon realized there were many DRC errors that we had not addressed. We couldn’t address this in time for the third round, so we planned to clear these up during/after spring break to submit on the fourth round pass.
+With our current PCB in order (Figure 6), I confirmed that it passed the audit on PCBway and submitted for the third round pass. However, I soon realized there were many DRC errors that we had not addressed. We couldn’t address this in time for the third round, so we planned to clear these up during/after spring break to submit on the fourth round pass.
 
 <img width="871" height="507" alt="Screenshot 2026-05-04 at 7 54 25 PM" src="https://github.com/user-attachments/assets/59126a6d-350f-4c90-a732-1681a614b46a" />
 Figure 6. Full PCB Schematic with Signal Processing, Audio, and Power Subsystems Implemented with no ERC Errors
@@ -1675,7 +1673,7 @@ I completed the input and protection circuitry, which includes:
 * 2.2 kΩ series resistors for current limiting
 * 100 pF capacitors for high-frequency noise filtering
 
-These components ensure that signals entering the ADS1299 are safe and clean. I also finalized the use of a single EEG channel (C3 referenced to M2), which is supported by literature for SWS detection and helps reduce latency, power, and PCB size. This simplification is important for making the system more practical as a wearable device.
+These components ensure that signals entering the ADS1299 are safe and clean. I also finalized the use of a single EEG channel (C3 referenced to M2), which is supported by literature [9] for SWS detection and helps reduce latency, power, and PCB size. This simplification is important for making the system more practical as a wearable device.
 
 <img width="749" height="430" alt="Screenshot 2026-05-04 at 7 49 02 PM" src="https://github.com/user-attachments/assets/bd86f71e-5a6b-4d01-bebd-031f9d900865" />
 Figure 3. Channel Input Protection Schematic for Signal Processing Subsystem ￼
@@ -1684,9 +1682,12 @@ I assigned footprints to all components, mostly choosing 0603 packages for passi
 
 For the audio subsystem, I initially planned to use PWM from the microcontroller directly into the amplifier with an RC filter. However, I realized this would introduce high-frequency switching noise, which is problematic in a system that also includes a sensitive analog front end.
 
-To address this, I added a DAC (MCP4822) between the MCU and amplifier. This converts the digital signal into a true analog output, reducing noise and improving signal quality. I also added a coupling capacitor (C40) between the DAC and amplifier input to block DC offset, since the amplifier expects an AC-coupled signal.
+To address this, I added a DAC (MCP4822) between the MCU and amplifier. This converts the digital signal into a true analog output, reducing noise and improving signal quality. I also added a coupling capacitor (C40) between the DAC and amplifier input to block DC offset, since the amplifier expects an AC-coupled signal [8].
 ￼<img width="418" height="441" alt="Screenshot 2026-05-04 at 7 48 24 PM" src="https://github.com/user-attachments/assets/17343de8-e896-46b6-98f5-e79620f609fc" />
 Figure 4. Audio Subsystem Schematic
+
+Schematics I made are seen in Figures 3 and 4.
+
 
 **3/3 - PCB implementation (schematic development)**
 
@@ -1747,7 +1748,7 @@ I continued working on the design document, focusing specifically on the signal 
 
 I also researched existing DIY EEG projects and found one that uses a single-channel design, which reinforced that this approach is practical for our use case [2].
 
-To better understand implementation, I studied the ADS1299 datasheet in detail, focusing on:
+To better understand implementation, I studied the ADS1299 datasheet in detail, from source [1], focusing on:
 
 * Electrode inputs and differential measurement
 * Internal MUX and ADC structure
@@ -1777,7 +1778,7 @@ This session set the foundation for moving from a conceptual proposal to a concr
 
 I updated the design section of the proposal to be more specific about the signal processing system, particularly how analog EEG signals are acquired, processed, and converted into digital data.
 
-I also researched communication protocols used between components, including SPI (for ADS1299 to MCU) and wireless communication (BLE). This informed both the written design and the system block diagram, as seen in Figure 1. 
+I also researched communication protocols used between components, including SPI (for ADS1299 to MCU) and wireless communication (BLE) [4]. This informed both the written design and the system block diagram, as seen in Figure 1. 
 ￼<img width="573" height="499" alt="Screenshot 2026-05-04 at 7 38 29 PM" src="https://github.com/user-attachments/assets/2d54790e-96fd-4a6c-80cb-7f3fb7e3171d" />
 Figure 1. Block Diagram
 

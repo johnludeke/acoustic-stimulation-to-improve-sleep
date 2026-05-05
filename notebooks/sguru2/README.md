@@ -1,4 +1,188 @@
-**4/23 – Embedded closed-loop stimulation on ESP32-C6**
+
+
+
+**4/24 - Improving real-time visualization and smoother plot updates**
+
+**Objective:** Improve the live visualization system so the filtered EEG trace updates smoothly in real time while clearly showing trough detections and predicted peaks on time with actual stimulation.
+
+After getting the embedded version working, the next issue was the visualization. The plot technically worked, but it did not look continuously real-time. The EEG trace would only clearly update around predicted peaks or stimulation events, so it looked like the graph was jumping peak-to-peak instead of streaming continuously.
+That was a problem because the whole point was to prove to the TA that trough detection and peak prediction are happening live, not just from a static plot. So I worked on making the serial output and Python plotting more consistent.
+Serial output rate and autocorrelation decimation
+```cpp
+// Faster autocorr buffer config
+// Full signal is 250 Hz, but autocorr only needs slow-wave timing.
+// 250 / 5 = 50 Hz, still enough for 0.5–4 Hz.
+static const int AC_DECIM = 5;
+static const float AC_FS = FS / AC_DECIM;
+static const int AC_SAMPLES = EPOCH_SEC * 50;  // 1500
+
+// Serial output
+static const int DATA_PRINT_DECIMATION = 5;  // 50 Hz DATA output
+```
+This was one of the biggest fixes. Since the Cyton is sampled at 250 Hz, printing every 5 samples gives 50 Hz DATA output. That is dense enough for a smooth plot, but not so much that serial output becomes overwhelming.
+The same decimation factor is used for autocorrelation. This keeps the slow-wave frequency estimation cheaper, while still preserving the 0.5 to 4 Hz content.
+Using PyQtGraph instead of matplotlib
+```python
+import sys
+import time
+import threading
+import serial
+import numpy as np
+from collections import deque
+
+from PyQt5 import QtWidgets, QtCore
+import pyqtgraph as pg
+```
+I switched from matplotlib to PyQtGraph for the serial visualization. Matplotlib was fine for static notebook plots, but it was too laggy for live data. PyQtGraph is much better for this because it can update the plot quickly without freezing the UI.
+Threaded serial reading
+```python
+def serial_thread():
+    buffer = ""
+
+    while running:
+        try:
+            n = ser.in_waiting
+            if n > 0:
+                chunk = ser.read(n).decode(errors="ignore")
+                buffer += chunk
+
+                lines = buffer.split("\n")
+                buffer = lines[-1]
+
+                for line in lines[:-1]:
+                    line = line.strip()
+                    if line:
+                        process_line(line)
+            else:
+                time.sleep(0.001)
+
+        except Exception as e:
+            print("Serial thread error:", e)
+            time.sleep(0.01)
+
+thread = threading.Thread(target=serial_thread, daemon=True)
+thread.start()
+```
+This separates serial reading from plotting. Before, plotting could block data reading or vice versa. With a background thread, the Python script can keep reading serial data continuously while the Qt timer handles plot updates.
+PyQtGraph plot setup
+```python
+app = QtWidgets.QApplication(sys.argv)
+
+win = pg.GraphicsLayoutWidget(show=True, title="ESP32 Closed-Loop Stimulation")
+win.resize(1300, 650)
+
+plot = win.addPlot(title="ESP32 real-time slow-wave stimulation visualization")
+plot.setLabel("bottom", "Time relative to newest sample", units="s")
+plot.setLabel("left", "Filtered EEG", units="µV")
+plot.setXRange(-PLOT_WINDOW_MS / 1000, FUTURE_VIEW_MS / 1000)
+plot.setYRange(*YLIM)
+plot.showGrid(x=True, y=True)
+plot.addLegend()
+
+sig_curve = plot.plot([], [], pen=pg.mkPen(width=2), name="0.5–4 Hz filtered EEG")
+
+trough_scatter = pg.ScatterPlotItem(
+    size=13,
+    symbol="t",
+    brush=pg.mkBrush(80, 160, 255),
+    pen=pg.mkPen(None),
+    name="Detected trough"
+)
+plot.addItem(trough_scatter)
+
+pred_scatter = pg.ScatterPlotItem(
+    size=13,
+    symbol="o",
+    brush=pg.mkBrush(255, 170, 0),
+    pen=pg.mkPen(None),
+    name="Predicted peak target"
+)
+plot.addItem(pred_scatter)
+
+stim_scatter = pg.ScatterPlotItem(
+    size=20,
+    symbol="star",
+    brush=pg.mkBrush(255, 60, 60),
+    pen=pg.mkPen(None),
+    name="Actual audio stim"
+)
+plot.addItem(stim_scatter)
+```
+This sets up the real-time plot with the filtered EEG trace, detected troughs, predicted peak targets, and actual stimulation events. The x-axis is relative to the newest sample, which makes the plot behave like a scrolling real-time window.
+Plot update logic
+```python
+def make_event_points(ts, ys, current_ms):
+    ts = np.array(ts)
+    ys = np.array(ys)
+
+    if len(ts) == 0:
+        return []
+
+    keep = (
+        (ts >= current_ms - PLOT_WINDOW_MS) &
+        (ts <= current_ms + FUTURE_VIEW_MS)
+    )
+
+    rel = (ts[keep] - current_ms) / 1000.0
+    yy = ys[keep]
+
+    return [{"pos": (float(x), float(v))} for x, v in zip(rel, yy)]
+
+def update_plot():
+    with lock:
+        if len(data_t) < 2:
+            return
+
+        t = np.array(data_t)
+        y = np.array(data_y)
+
+        tr_t = list(trough_t)
+        tr_y = list(trough_y)
+
+        pr_t = list(pred_t)
+        pr_y = list(pred_y)
+
+        st_t = list(stim_t)
+        st_y = list(stim_y)
+
+        freq = latest_freq
+        T = latest_T
+
+    current_ms = t[-1]
+
+    keep = t >= current_ms - PLOT_WINDOW_MS
+    rel_t = (t[keep] - current_ms) / 1000.0
+    y_view = y[keep]
+
+    sig_curve.setData(rel_t, y_view)
+
+    trough_scatter.setData(make_event_points(tr_t, tr_y, current_ms))
+    pred_scatter.setData(make_event_points(pr_t, pr_y, current_ms))
+    stim_scatter.setData(make_event_points(st_t, st_y, current_ms))
+
+    freq_text = "estimating..." if freq is None else f"{freq:.2f} Hz"
+    T_text = "estimating..." if T is None else f"{T:.0f} ms"
+
+    status.setText(
+        f"Freq: {freq_text}\n"
+        f"T: {T_text}\n"
+        f"Troughs: {len(tr_t)}\n"
+        f"Pred peaks: {len(pr_t)}\n"
+        f"Audio stims: {len(st_t)}"
+    )
+
+timer = QtCore.QTimer()
+timer.timeout.connect(update_plot)
+timer.start(UPDATE_MS)
+```
+This fixed the main visualization issue. The plot updates on a timer, not only when a new event appears. The continuous DATA stream drives the EEG trace, and the event buffers just overlay markers on top.
+With UPDATE_MS = 25, the plot updates around 40 frames per second, which made the signal look continuous between troughs and stim events.
+Overall takeaway
+By 4/24, the embedded breadboard version was much closer to a real demo. The ESP32-C6 reads Cyton EEG packets, filters the signal, estimates slow-wave period from a rolling 30-second buffer, detects troughs live, predicts peaks, and triggers pink noise stimulation through the PAM8302.
+The Python visualizer now shows the data continuously instead of jumping from event to event. This better demonstrates that the system is actually running in real time and directly addresses the concern from the progress demo.
+
+
+**4/23 - Embedded closed-loop stimulation on ESP32-C6**
 
 **Objective:** Implement the closed-loop slow-wave stimulation pipeline on the ESP32-C6 using live Cyton EEG data, including filtering, frequency estimation, trough detection, peak prediction, and pink noise triggering.
 Moved the Alg. 2 pipeline from the Python prototype onto the ESP32-C6 running on the breadboard. This version uses live Cyton data over UART, applies the same slow-wave processing logic from the notebook, and then triggers pink noise stimulation through the breadboard audio path.

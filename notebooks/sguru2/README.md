@@ -1,3 +1,4 @@
+##Sid's Lab Notebook
 References:
 ```markdown
 1. “ADS1299.” ADS1299 Data Sheet, Product Information and Support | TI.Com, www.ti.com/product/ADS1299. Accessed 1 Apr. 2026. 

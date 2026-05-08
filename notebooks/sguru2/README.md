@@ -1,4 +1,4 @@
-##Sid's Lab Notebook
+## Sid's Lab Notebook
 References:
 ```markdown
 1. “ADS1299.” ADS1299 Data Sheet, Product Information and Support | TI.Com, www.ti.com/product/ADS1299. Accessed 1 Apr. 2026. 
@@ -12,7 +12,7 @@ References:
 9. Su, Bo-Lin et al. “Detecting slow wave sleep using a single EEG signal channel.” Journal of neuroscience methods vol. 243 (2015): 47-52. doi:10.1016/j.jneumeth.2015.01.023
 ```
 
-**4/26 - Full system integration + requirement verification prep**
+## 4/26 - Full system integration + requirement verification prep
 
 **Objective:** Integrate SWS prediction with phase-aligned stimulation on embedded system and validate key system requirements ahead of demo.
 

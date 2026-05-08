@@ -45,7 +45,7 @@ I also verified timing requirements by checking timestamps in the serial output.
 In parallel, I reviewed packet parsing and bitstream handling to ensure data integrity from the Cyton board, confirming that packets are being correctly parsed and converted into usable EEG signals.
 Overall, this session was focused on tying everything together: integrating both algorithms into a single embedded pipeline, verifying that key system requirements are met, and preparing for the final demo with John and Bakry.
 
-**4/25 - Real-time SWS prediction on ESP32 using x features**
+## 4/25 - Real-time SWS prediction on ESP32 using x features
 
 **Objective:** Extend real-time x feature extraction pipeline to include on-device SWS prediction using trained MLP model, and ensure embedded preprocessing matches training conditions.
 
@@ -118,7 +118,7 @@ Overall, this was the first fully integrated version of real-time EEG processing
 <img width="374" height="343" alt="Screenshot 2026-05-04 at 9 50 45 PM" src="https://github.com/user-attachments/assets/fff4117b-9739-49b2-becd-1527e3cf0440" />
 Figure 19. Non-Zero SWS Probability from NSWS-Classified Epochs
 
-**4/24 - Improving real-time visualization and smoother plot updates**
+## 4/24 - Improving real-time visualization and smoother plot updates
 
 **Objective:** Improve the live visualization system so the filtered EEG trace updates smoothly in real time while clearly showing trough detections and predicted peaks on time with actual stimulation.
 
@@ -299,7 +299,7 @@ By 4/24, the embedded breadboard version was much closer to a real demo. The ESP
 The Python visualizer now shows the data continuously instead of jumping from event to event. This better demonstrates that the system is actually running in real time and directly addresses the concern from the progress demo.
 
 
-**4/23 - Embedded closed-loop stimulation on ESP32-C6**
+## 4/23 - Embedded closed-loop stimulation on ESP32-C6
 
 **Objective:** Implement the closed-loop slow-wave stimulation pipeline on the ESP32-C6 using live Cyton EEG data, including filtering, frequency estimation, trough detection, peak prediction, and pink noise triggering.
 Moved the Alg. 2 pipeline from the Python prototype onto the ESP32-C6 running on the breadboard. This version uses live Cyton data over UART, applies the same slow-wave processing logic from the notebook, and then triggers pink noise stimulation through the breadboard audio path.
@@ -646,7 +646,7 @@ STIM,32566
 This confirmed that the ESP32 was producing frequency updates, trough detections, predicted peaks, and real audio stimulation events.
 
 
-**4/22 - Real-time trough detection + peak prediction (LSL streaming)**
+## 4/22 - Real-time trough detection + peak prediction (LSL streaming)
 
 **Objective:** Convert the phase-aligned stimulation algorithm into a real-time LSL streaming prototype to verify live trough detection and peak prediction.
 
@@ -790,7 +790,7 @@ So now the full pipeline is actually happening online:
 * Real-time trough detection
 * Immediate peak prediction for stimulation timing
   
-**4/21 - Alg. 2 development (frequency estimation + phase-aligned stimulation)**
+## 4/21 - Alg. 2 development (frequency estimation + phase-aligned stimulation)
 
 **Objective:** Develop an embedded-compatible phase-aligned stimulation algorithm using causal filtering, autocorrelation-based frequency estimation, trough detection, and peak prediction.
 
@@ -949,7 +949,7 @@ Then next following epoch (current data in general): bandpass-> trough detec
 This directly matches what we want running on the MCU for real-time closed-loop stimulation. One note is for real-time trough detection, since we can’t depend on future data, we’ll have to set some thresholds to determine what can be classified as a trough. 
 
 
-**4/20 - Full dataset build, model training, comparison, and saving**
+## 4/20 - Full dataset build, model training, comparison, and saving
 
 **Objective:** Build the full Sleep-EDF Expanded feature dataset, train multiple SWS classifiers, compare performance, and save models for embedded implementation.
 
@@ -1078,7 +1078,7 @@ joblib.dump(best_model, "sws_x_model_best.joblib")
 This gives me multiple model options for embedded implementation. Logistic regression is simpler, while MLP may be better for balancing precision/recall depending on how conservative we want stimulation triggering to be.
 
 
-**4/19 - Feature extraction + single-record validation**
+## 4/19 - Feature extraction + single-record validation
 
 **Objective:** Implement and validate single-record x feature extraction from 30-second labeled EEG epochs for binary SWS classification.
 
@@ -1221,7 +1221,7 @@ Class counts: NSWS=956, SWS=136
 One hiccup was that MNE gave warnings about channels having different highpass/lowpass filters. 
 Since I explicitly selected one EEG channel before feature extraction, this did not block the model pipeline.
 
-**4/18 - Epoch / label alignment checks**
+## 4/18 - Epoch / label alignment checks
 
 **Objective:** Verify that Sleep-EDF Expanded hypnogram annotations correctly align with PSG EEG data before building the supervised training pipeline.
 
@@ -1259,7 +1259,7 @@ Difference: -81
 ```
 This was important because it means I should not blindly cut the full EEG recording into 30-second windows. Only annotation-backed epochs should be used for supervised training.
 
-**4/17 - SWS Prediction + Phase-aligned Stimulation Algorithms Clarification**
+## 4/17 - SWS Prediction + Phase-aligned Stimulation Algorithms Clarification
 
 **Objective:** Clarify the full two-algorithm pipeline for SWS prediction and phase-aligned stimulation, and decide how to connect feature-based SWS classification with trough-based peak prediction.
 
@@ -1311,7 +1311,7 @@ The expanded dataset is thus fully compatible with MNE annotation pipeline, usab
 Basically, today I switched to Sleep-EDF Expanded because it provides properly formatted EDF + annotation pairs. This is critical since the entire SWS pipeline depends on 30 s labeled epochs for supervised learning
 
 
-**4/14 - Real-time x feature extraction on ESP32 + design decision on PCB direction**
+## 4/14 - Real-time x feature extraction on ESP32 + design decision on PCB direction
 
 **Objective:** Implement real-time x feature extraction from Cyton EEG data on ESP32 and evaluate whether to proceed with full PCB bring-up or current hybrid setup.
 On the software side, I extended the x feature extraction pipeline to run directly on the ESP32 using raw Cyton data streamed over UART. Unlike the earlier Python version, this required working with packetized data and integrating feature extraction into a continuous embedded loop.
@@ -1401,14 +1401,14 @@ Option 2: Use Cyton + audio PCB (current approach)
 
 Given the timeline and course requirements (working system > fully custom hardware), we decided to move forward with the Cyton board for EEG acquisition and use our custom audio PCB for stimulation. This keeps the system reliable while still demonstrating all key functionality: real-time EEG digitization and phase-aligned audio stimulation.
 
-**4/10 - PCB ordered**
+## 4/10 - PCB ordered
 
 **Objective:** Submit final PCB design for order.
 
 We finalized the design and placed the PCB order out of pocket to avoid delays. We chose to order with no stencil since we were confident in our soldering and it would reduce the cost. At this point, all schematic and layout checks (ERC/DRC) had been completed, and we were confident in the design. Ordering marked the transition from design to implementation, and the focus moving forward would shift toward bring-up and testing.
 
 
-**4/9 - Audio PCB design review + ordering logistics**
+## 4/9 - Audio PCB design review + ordering logistics
 
 **Objective:** Finalize audio subsystem PCB design and prepare for fabrication.
 
@@ -1436,7 +1436,7 @@ We also verified that all parts were in stock and would arrive on time. At this 
 
 This gave us flexibility depending on whether we wanted easier assembly (stencil) or lower cost.
 
-**4/6 - Audio subsystem iteration + timing behavior**
+## 4/6 - Audio subsystem iteration + timing behavior
 
 **Objective:** Improve audio subsystem prototype and begin aligning stimulation timing with incoming signal behavior.
 
@@ -1446,7 +1446,7 @@ On the software side, I updated the audio stimulation logic so that the pink noi
 
 This was a good step toward validating the timing pipeline before integrating real EEG signals, since it let us test phase alignment in a controlled setting using a known waveform.
 
-**4/5 - Packet Parsing + Signal Validation**
+## 4/5 - Packet Parsing + Signal Validation
 
 **Objective:** Parse Cyton data packets on the ESP32, reconstruct EEG signals, and validate signal integrity against the OpenBCI GUI to confirm a correct embedded data pipeline.
 
@@ -1477,7 +1477,7 @@ The next step will be to port the feature extraction logic from Python to the ES
 
 
 
-**4/4 - Hardware Integration (Cyton, ESP32)**
+## 4/4 - Hardware Integration (Cyton, ESP32)
 
 **Objective:** Establish a reliable hardware interface between the OpenBCI Cyton and ESP32 by correctly tapping into the EEG data stream without disrupting system communication.
 
@@ -1495,7 +1495,7 @@ I then switched to connecting the RX pin of the dongle to the ESP32. In this con
 Figure 12. OpenBCI Cyton BLE Dongle Module
 
 
-**3/31 - Real-Time x Feature Extraction from LSL Stream**
+## 3/31 - Real-Time x Feature Extraction from LSL Stream
 
 **Objective:** Extend the 3/30 offline SWS feature extraction work into a real-time streaming prototype using OpenBCI data.
 
@@ -1563,7 +1563,7 @@ def compute_x_features(epoch, sfreq):
 This block takes a full 30-second window and splits it into 1-second chunks. For each chunk, it zero-means the signal, finds zero-crossings, and then looks at each pair of consecutive crossings. The distance between crossings gives a segment length, and the area under that segment is computed using the absolute value of the signal.
 Across the whole 30 seconds, the code builds up a list of segment lengths for x1 and x2, and accumulates x3 using segment length times area. This is where the time-domain behavior of the signal gets converted into features.
 
-**3/30 - SWS Detection + Real-Time Prototype**
+## 3/30 - SWS Detection + Real-Time Prototype
 
 **Objective:** Understand and implement the single-channel zero-crossing-point-based (x) feature vector
 
@@ -1592,7 +1592,7 @@ After validating feature extraction offline, I moved to a real-time prototype us
 
 ￼
 ￼
-**3/24 – Fixing DGND pin connections**
+## 3/24 – Fixing DGND pin connections
 
 **Objective:** Ensure a continuous digital ground plane and eliminate DRC errors caused by DGND islands.
 
@@ -1608,7 +1608,7 @@ Once these fixes were made, which John helped with some that I didn’t know how
 <img width="857" height="779" alt="Screenshot 2026-05-04 at 8 02 11 PM" src="https://github.com/user-attachments/assets/49d586a0-b6f6-49e1-a7f9-dbb8f62e895f" />
 Figure 9. PCB Submitted for Fourth Round Pass
 
-**3/23 - Fixing AGND pin connections**
+## 3/23 - Fixing AGND pin connections
 
 **Objective:** Ensure a continuous analog ground plane and eliminate DRC errors caused by AGND islands.
 
@@ -1620,7 +1620,7 @@ To fix this, I used the bottom layer as a continuous AGND plane and added vias f
 Figure 7. Examples of Fixing AGND connections from ADS1299 pins using Vias
 
 
-**3/12 - Routing concerns / design check**
+## 3/12 - Routing concerns / design check
 
 **Objective:** Re-evaluate routing decisions before locking in PCB layout.
 
@@ -1634,7 +1634,7 @@ With our current PCB in order (Figure 6), I confirmed that it passed the audit o
 Figure 6. Full PCB Schematic with Signal Processing, Audio, and Power Subsystems Implemented with no ERC Errors
 ￼
 
-**3/11 - PCB organization and routing**
+## 3/11 - PCB organization and routing
 
 **Objective:** Organize component placement and routing around ADS1299 for clean layout and low-noise operation.
 
@@ -1649,7 +1649,7 @@ I also separated the board into functional regions:
 Initially considered moving the power entry closer to the AGND side, but decided against it because it would bring switching noise too close to the analog front end. Instead, I kept power and digital components on the DGND side and maintained physical separation from the analog region. 
 
 
-**3/10 - Breadboard development (audio subsystem pivot)**
+## 3/10 - Breadboard development (audio subsystem pivot)
 
 **Objective:** Prototype audio output path and verify ability to generate stimulation signals.
 
@@ -1662,7 +1662,7 @@ I first generated simple white noise using a basic random signal to confirm the 
 This validated that the audio chain works end-to-end and gave us a working prototype for stimulation output. It also highlighted the importance of amplitude scaling and clean signal generation. We did not have access to a DAC yet, but plan to include one for the PCB.
 
 
-**3/9 - Component pickup + schematic finalization + audio subsystem**
+## 3/9 - Component pickup + schematic finalization + audio subsystem
 
 **Objective:** Prepare schematic for PCB and refine audio subsystem design. Finalize signal processing schematic and begin hardware setup.
 
@@ -1690,7 +1690,7 @@ Figure 4. Audio Subsystem Schematic
 Schematics I made are seen in Figures 3 and 4.
 
 
-**3/3 - PCB implementation (schematic development)**
+## 3/3 - PCB implementation (schematic development)
 
 **Objective:** Build complete ADS1299-based signal processing schematic.
 
@@ -1707,7 +1707,7 @@ I implemented all key ADS1299 connections:
 I also added proper decoupling (0.1 µF + 1 µF) on supply rails to stabilize voltage and reduce noise. Overall, the goal was to create a low-noise environment suitable for microvolt EEG signals.
 
 
-**2/25 - Communication + component decisions**
+## 2/25 - Communication + component decisions
 
 **Objective:** Decide communication method and finalize major system components.
 
@@ -1722,7 +1722,7 @@ We also finalized key components across subsystems, including:
 * BLE module
 * Audio chain (DAC, amplifier, speaker)
 
-**2/24 - Design document update + testing plan**
+## 2/24 - Design document update + testing plan
 
 **Objective:** Finalize component selection and define verification strategy for the system.
 
@@ -1740,7 +1740,7 @@ Based on this, I proposed measuring the fraction of time where samples are satur
 
 Additionally, I added a requirement to verify the accuracy of our SWS detection model against labeled data. This ensures not only that the hardware works, but that the system meets performance expectations in detecting slow-wave sleep.
 
-**2/23 - Signal processing subsystem focus + ADS1299 study**
+## 2/23 - Signal processing subsystem focus + ADS1299 study
 
 **Objective:**
  Understand ADS1299 operation and evaluate simplifying system to single-channel EEG.
@@ -1762,7 +1762,7 @@ This helped clarify how signals flow through the chip and informed later schemat
 Figure 2. ADS1299 Analog Front-End Functional Block Diagram
 
 
-**2/18 - Initial research + team planning**
+## 2/18 - Initial research + team planning
 
 **Objective:** Establish project direction and begin refining design from proposal.
 
@@ -1773,7 +1773,7 @@ I began iterating on the design document based on TA feedback, focusing on the s
 This session set the foundation for moving from a conceptual proposal to a concrete system design.
 
 
-**2/12 - Proposal refinement + system architecture**
+## 2/12 - Proposal refinement + system architecture
 
 **Objective:** Refine design section of proposal and define system-level architecture.
 
@@ -1791,6 +1791,20 @@ At this stage, I was focused on clearly defining:
 * Output (audio stimulation)
 
 This work established the overall system pipeline that later guided both schematic and PCB development.
+
+
+## 2/5 - Initial project proposal discussion + system concept exploration
+
+**Objective:** Discuss project direction and begin defining the high-level system concept.
+
+Met with the team to discuss the overall project proposal, system goals, and implementation a closed-loop auditory stimulation device for improving slow wave sleep. A major topic of discussion was the hardware architecture of the system and the possibility of recreating the core functionality of the OpenBCI Cyton board on a custom PCB, for which we conferred with a TA.
+
+At this stage, the focus was primarily on defining the overall project scope and identifying the major subsystems required for implementation, including:
+
+* EEG acquisition and amplification
+* Signal processing and sleep-stage detection
+* Wireless data transmission
+* Audio stimulation output
 
 
 
